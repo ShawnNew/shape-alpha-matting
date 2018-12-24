@@ -25,7 +25,7 @@ layer {
 layer {
   bottom: "data_origin"
   bottom: "tri-map"
-  top: "conv1_1_matting"
+  top: "conv1_1"
   name: "conv1_1_matting"
   type: CONVOLUTION
   param {
