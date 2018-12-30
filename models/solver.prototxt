@@ -1,4 +1,4 @@
-net: "train_val.prototxt"
+net: "/home/dl/Codes/shape-alpha-matting/models/shapeAlphaMattingNet_S1_deploy.prototxt"
 test_iter: 120
 test_interval: 2000
 base_lr: 0.0001
@@ -10,5 +10,5 @@ max_iter: 450000
 momentum: 0.9
 weight_decay: 0.0005
 snapshot: 10000
-snapshot_prefix: "snapshot_full/VGG16_imagenet_train"
+snapshot_prefix: "/home/dl/Codes/shape-alpha-matting/models/Training"
 solver_mode: GPU
