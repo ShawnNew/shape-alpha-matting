@@ -1,0 +1,193 @@
+name: "ShapeDeepMattingNet_S2"
+# ---------------------------- Refine net ---------------------------
+# Scale the output of the decoder before passing to refine net
+layer {
+  name: "scaledDecoder"
+  type: "Scale"
+  bottom: "sigmoid"
+  top: "scaled_decoder"
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  param {
+    lr_mult: 0
+    decay_mult: 0
+  }
+  scale_param {
+    filler {
+      value: 255
+    }
+    bias_term: false
+  }
+}
+layer {
+  name: "refine_concat"
+  bottom: "scaled_decoder"
+  bottom: "data_origin"
+  top: "refine_data"
+  type: "Concat"
+  concat_param {
+    axis: 1
+  }
+}
+layer {
+  name: "refine_conv_1"
+  bottom: "refine_data"
+  top: "refine_conv_1"
+  type: CONVOLUTION
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  name: "refine_relu_1"
+  bottom: "refine_conv_1"
+  top: "refine_conv_1"
+  type: RELU
+}
+layer {
+  name: "refine_conv_2"
+  bottom: "refine_conv_1"
+  top: "refine_conv_2"
+  type: CONVOLUTION
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  name: "refine_relu_2"
+  bottom: "refine_conv_2"
+  top: "refine_conv_2"
+  type: RELU
+}
+layer {
+  name: "refine_conv_3"
+  bottom: "refine_conv_2"
+  top: "refine_conv_3"
+  type: CONVOLUTION
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  name: "refine_relu_3"
+  bottom: "refine_conv_3"
+  top: "refine_conv_3"
+  type: RELU
+}
+layer {
+  name: "refine_conv_4"
+  bottom: "refine_conv_3"
+  top: "refine_conv_4"
+  type: CONVOLUTION
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  name: "refine_relu_4"
+  bottom: "refine_conv_4"
+  top: "refine_conv_4"
+  type: RELU
+}
+layer {
+  name: "refine_conv_5"
+  bottom: "refine_conv_4"
+  top: "refine_conv_5"
+  type: CONVOLUTION
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 1
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  name: "refine_sigmoid_output"
+  bottom: "refine_conv_5"
+  top: "refine_sigmoid"
+  type: SIGMOID
+}

@@ -1,4 +1,4 @@
-name: "ShapeDeepMattingNet"
+name: "ShapeDeepMattingNet_S1"
 
 # --------------------------- Encoder Network --------------------
 # Input data is four or more channel, because add tri-map and other
@@ -19,12 +19,22 @@ layer {
       shape: { dim: 10 dim: 3 dim: 227 dim: 227 } 
     }
 }
+# Add concat layer to concat tri-map and raw images.
+layer {
+  name: "concat"
+  bottom: "tri-map"
+  bottom: "data_origin"
+  top: "train_data"
+  type: "Concat"
+  concat_param {
+    axis: 1  # axis=1 represents that the concat is adding the channels
+  }
+}
 # The first conv layer is different from VGG-16's, due to the add-on
 # channel tri-map. Within this layer, set the learning rate at a
 # higher level, because this layer is initialized with random value.
 layer {
-  bottom: "data_origin"
-  bottom: "tri-map"
+  bottom: "train_data"
   top: "conv1_1"
   name: "conv1_1_matting"
   type: CONVOLUTION
@@ -738,165 +748,16 @@ layer {
   type: SIGMOID
 }
 
-# ---------------------------- Refine net ---------------------------
+# ---------------------------- Loss ---------------------------
 layer {
-  name: "refine_conv_1"
-  bottom: "data_origin"
-  bottom: "sigmoid_output"
-  top: "refine_conv_1"
-  type: CONVOLUTION
-  param {
-    lr_mult: 10
-    decay_mult: 1
+  name: "alpha_prediction_loss"
+  type: "Python"
+  bottom: "sigmoid"
+  bottom: "label"
+  top: "alpha_prediction_loss"
+  python_param {
+    module: "/home/dl/Codes/shape-alpha-matting/scripts/rootSquareLoss.py"
+    layer: "RootSquareLossLayer"
   }
-  param {
-    lr_mult: 20
-    decay_mult: 0
-  }
-  convolution_param {
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-    num_output: 64
-    pad: 1
-    kernel_size: 3
-  }
-}
-layer {
-  name: "refine_relu_1"
-  bottom: "refine_conv_1"
-  top: "refine_conv_1"
-  type: RELU
-}
-layer {
-  name: "refine_conv_2"
-  bottom: "refine_conv_1"
-  top: "refine_conv_2"
-  type: CONVOLUTION
-  param {
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 20
-    decay_mult: 0
-  }
-  convolution_param {
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-    num_output: 64
-    pad: 1
-    kernel_size: 3
-  }
-}
-layer {
-  name: "refine_relu_2"
-  bottom: "refine_conv_2"
-  top: "refine_conv_2"
-  type: RELU
-}
-layer {
-  name: "refine_conv_3"
-  bottom: "refine_conv_2"
-  top: "refine_conv_3"
-  type: CONVOLUTION
-  param {
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 20
-    decay_mult: 0
-  }
-  convolution_param {
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-    num_output: 64
-    pad: 1
-    kernel_size: 3
-  }
-}
-layer {
-  name: "refine_relu_3"
-  bottom: "refine_conv_3"
-  top: "refine_conv_3"
-  type: RELU
-}
-layer {
-  name: "refine_conv_4"
-  bottom: "refine_conv_3"
-  top: "refine_conv_4"
-  type: CONVOLUTION
-  param {
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 20
-    decay_mult: 0
-  }
-  convolution_param {
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-    num_output: 64
-    pad: 1
-    kernel_size: 3
-  }
-}
-layer {
-  name: "refine_relu_4"
-  bottom: "refine_conv_4"
-  top: "refine_conv_4"
-  type: RELU
-}
-layer {
-  name: "refine_conv_5"
-  bottom: "refine_conv_4"
-  top: "refine_conv_5"
-  type: CONVOLUTION
-  param {
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 20
-    decay_mult: 0
-  }
-  convolution_param {
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-    num_output: 1
-    pad: 1
-    kernel_size: 3
-  }
-}
-layer {
-  name: "refine_sigmoid_output"
-  bottom: "refine_conv_5"
-  top: "refine_sigmoid"
-  type: SIGMOID
+  loss_weight: 1
 }
