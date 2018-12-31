@@ -14,9 +14,9 @@ def write_files(data, tri_map, label):
     text_filename = os.path.join(DIR, 'alphamatting.txt')
 
     with h5py.File(h5_filename, 'w') as f:
-        f['data'] = data
-        f['tri-map'] = tri_map
-        f['label'] = label
+        f.create_dataset('data', data=data)
+        f.create_dataset('tri-map', data=tri_map)
+        f.create_dataset('label', data=label)
 
     with open(text_filename, 'w') as f:
         # print(h5_filename, file=f)
@@ -43,17 +43,23 @@ if __name__ == '__main__':
             l = l.rstrip()
             l = l.replace('./', DATASET)
             items = l.split(' ')
-            # pdb.set_trace()
             raw_img = caffe.io.load_image(items[0])
-            data = caffe.io.resize(
-                raw_img, (RAW_IMAGE_SIZE, RAW_IMAGE_SIZE, 3)
+            #TODO: img is not resize correctly here
+            raw_img = caffe.io.resize(
+                raw_img, (3, RAW_IMAGE_SIZE, RAW_IMAGE_SIZE)
             )
+            
             raw_tri_map = caffe.io.load_image(items[1])
-            tri_map = caffe.io.resize(
-                raw_tri_map, (RAW_IMAGE_SIZE, RAW_IMAGE_SIZE, 3)
+            raw_tri_map = caffe.io.resize(
+                raw_tri_map, (3, RAW_IMAGE_SIZE, RAW_IMAGE_SIZE)
             )
             raw_label = caffe.io.load_image(items[2])
-            label = caffe.io.resize(
-                raw_label, (RAW_IMAGE_SIZE, RAW_IMAGE_SIZE, 3)
+            raw_label = caffe.io.resize(
+                raw_label, (3, RAW_IMAGE_SIZE, RAW_IMAGE_SIZE)
             )
+            data[i] = raw_img
+            tri_map[i] = raw_tri_map
+            label = raw_label
+            pdb.set_trace()
+        # pdb.set_trace()
         write_files(data, tri_map, label)
