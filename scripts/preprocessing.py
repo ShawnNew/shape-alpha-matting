@@ -22,10 +22,6 @@ def write_files(data, tri_map, label):
     hdf_file.create_dataset('label', dtype=np.float, data=label, chunks=chunks)
     hdf_file.flush()
     hdf_file.close()
-    # with h5py.File(h5_filedir, 'w') as f:
-    #     f.create_dataset('data', data=data)
-    #     f.create_dataset('tri-map', data=tri_map)
-    #     f.create_dataset('label', data=label)
 
     with open(text_filedir, 'w') as f:
         f.write(h5_filedir)

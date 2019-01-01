@@ -520,10 +520,11 @@ layer {
   bottom: "pool5_mask"
   top: "unpool5_1"
   type: "Unpooling"
-  pooling_param {
-    pool: MAX
+  unpooling_param {
+    unpool: MAX
     kernel_size: 2
     stride: 2
+    unpool_size: 12
   }
 }
 layer {
@@ -564,10 +565,11 @@ layer {
   bottom: "pool4_mask"
   top: "unpool4_1"
   type: "Unpooling"
-  pooling_param {
-    pool: MAX
+  unpooling_param {
+    unpool: MAX
     kernel_size: 2
     stride: 2
+    unpool_size: 12
   }
 }
 layer {
@@ -608,10 +610,11 @@ layer {
   bottom: "pool3_mask"
   top: "unpool3_1"
   type: "Unpooling"
-  pooling_param {
-    pool: MAX
+  unpooling_param {
+    unpool: MAX
     kernel_size: 2
     stride: 2
+    unpool_size: 12
   }
 }
 layer {
@@ -652,10 +655,11 @@ layer {
   bottom: "pool2_mask"
   top: "unpool2_1"
   type: "Unpooling"
-  pooling_param {
-    pool: MAX
+  unpooling_param {
+    unpool: MAX
     kernel_size: 2
     stride: 2
+    unpool_size: 12
   }
 }
 layer {
@@ -696,10 +700,11 @@ layer {
   bottom: "pool1_mask"
   top: "unpool1_1"
   type: "Unpooling"
-  pooling_param {
-    pool: MAX
+  unpooling_param {
+    unpool: MAX
     kernel_size: 2
     stride: 2
+    unpool_size: 12
   }
 }
 layer {
@@ -775,7 +780,7 @@ layer {
   bottom: "label"
   top: "alpha_prediction_loss"
   python_param {
-    module: "/home/dl/Codes/shape-alpha-matting/scripts/rootSquareLoss.py"
+    module: "rootSquareLoss"
     layer: "RootSquareLossLayer"
   }
   loss_weight: 1

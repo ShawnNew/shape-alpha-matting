@@ -1,12 +1,33 @@
 import caffe
 import numpy as np
 
-class RootSquareLossLayer(caffe.LossLayer):
+class RootSquareLossLayer(caffe.Layer):
+    """
+    Add Root Square Loss Layer.
+
+    Use like this:
+
+    layer {
+        name: "xxx"
+        type: "Python"
+        bottom: "pred"
+        bottom: "label"
+        top: "loss"
+        include {
+            phase: train/test
+        }
+        python_param {
+            module: "rootSquareLoss"
+            layer: "RootSquareLossLayer"
+            param_str: "xxx"
+        }
+    }
+    """
     # Check the input blob, it should have two input and the dimension should align
     def setup(self, bottom, top):
-        assert len(bottom) != 2:
+        if len(bottom) != 2:
             raise Exception("Wrong number of bottom blobs (prediction and label)")
-        assert bottom[0].data.ndim != bottom[1].data.ndim:
+        if bottom[0].data.ndim != bottom[1].data.ndim:
             raise Exception("Prediction's dimension does not align with the label")
 
 
