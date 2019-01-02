@@ -1,1 +1,5 @@
 *.caffemodel
+.vscode
+dataset
+*.pyc
+*.swp
