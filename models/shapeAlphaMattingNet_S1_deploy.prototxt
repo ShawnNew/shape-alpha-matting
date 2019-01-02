@@ -38,6 +38,19 @@ layer {
   }
 }
 
+layer {
+  type: "HDF5Data"
+  top: "data"
+  top: "tri-map"
+  top: "label"
+  hdf5_data_param {
+    source: "/home/dl/Codes/shape-alpha-matting/dataset/alphamatting.txt"
+    batch_size: 4
+  }
+  include {
+    phase: TEST
+  }
+}
 # Add concat layer to concat tri-map and raw images.
 layer {
   name: "concat"
@@ -784,4 +797,20 @@ layer {
     layer: "RootSquareLossLayer"
   }
   loss_weight: 1
+}
+
+layer {
+  name: "accuracy"
+  type: "Python"
+  bottom: "sigmoid"
+  bottom: "label"
+  top: "accuracy"
+  python_param {
+    module: "rootSquareLoss"
+    layer: "RootSquareLossLayer"
+  }
+  loss_weight: 1
+  include {
+    phase: TEST
+  }
 }
