@@ -30,7 +30,7 @@ layer {
   top: "tri-map"
   top: "label"
   hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/alphamatting.txt"
+    source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
     batch_size: 4
   }
   include {
@@ -44,7 +44,7 @@ layer {
   top: "tri-map"
   top: "label"
   hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/alphamatting.txt"
+    source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
     batch_size: 4
   }
   include {
@@ -461,42 +461,42 @@ layer {
 # The above is same as VGG-16, the following is adapted for matting.
 # Initialze this layer with random value, and train this layer from
 # start.
-layer {
-  name: "conv6_1"
-  bottom: "pool5"
-  top: "conv6_1"
-  type: "Convolution"
-  param {
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 20
-    decay_mult: 0
-  }
-  convolution_param {
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-    num_output: 4096
-    pad: 1
-    kernel_size: 7
-  }    
-}
-layer {
-  bottom: "conv6_1"
-  top: "conv6_1"
-  name: "relu5_3"
-  type: "ReLU"
-}
+# layer {
+#   name: "conv6_1"
+#   bottom: "pool5"
+#   top: "conv6_1"
+#   type: "Convolution"
+#   param {
+#     lr_mult: 10
+#     decay_mult: 1
+#   }
+#   param {
+#     lr_mult: 20
+#     decay_mult: 0
+#   }
+#   convolution_param {
+#     weight_filler {
+#       type: "xavier"
+#     }
+#     bias_filler {
+#       type: "constant"
+#       value: 0
+#     }
+#     num_output: 4096
+#     pad: 0
+#     kernel_size: 7
+#   }    
+# }
+# layer {
+#   bottom: "conv6_1"
+#   top: "conv6_1"
+#   name: "relu5_3"
+#   type: "ReLU"
+# }
 
 # ------------------------ Decoder ---------------------------
 layer {
-  bottom: "conv6_1"
+  bottom: "pool5"
   top: "deconv_6"
   name: "deconv_6"
   type: "Convolution"
@@ -517,7 +517,7 @@ layer {
       value: 0
     }
     num_output: 512
-    pad: 1
+    pad: 0
     kernel_size: 1
   }    
 }
@@ -537,7 +537,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 12
+    unpool_size: 14
   }
 }
 layer {
@@ -562,7 +562,7 @@ layer {
       value: 0
     }
     num_output: 512
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
@@ -582,7 +582,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 12
+    unpool_size: 28
   }
 }
 layer {
@@ -607,7 +607,7 @@ layer {
       value: 0
     }
     num_output: 256
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
@@ -627,7 +627,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 12
+    unpool_size: 56
   }
 }
 layer {
@@ -652,7 +652,7 @@ layer {
       value: 0
     }
     num_output: 128
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
@@ -672,7 +672,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 12
+    unpool_size: 112
   }
 }
 layer {
@@ -697,7 +697,7 @@ layer {
       value: 0
     }
     num_output: 64
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
@@ -717,7 +717,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 12
+    unpool_size: 224
   }
 }
 layer {
@@ -742,7 +742,7 @@ layer {
       value: 0
     }
     num_output: 64
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
@@ -774,7 +774,7 @@ layer {
       value: 0
     }
     num_output: 1
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
