@@ -82,14 +82,14 @@ class AlphaMattingLossLayer(caffe.Layer):
     def compositional_loss(self, pred, mask, color_img, fg, bg):
         # calculate compositional_loss here
         mask = np.reshape(mask, (-1, 1, self.shape[0], self.shape[1]))
-        pred = np.reshaple(pred, (-1, 1, self.shape[0], self.shape[1]))
+        pred = np.reshape(pred, (-1, 1, self.shape[0], self.shape[1]))
         color_pred = pred * fg + (1.0 - pred) * bg    # element-wise multiply to get color image
         diff = color_pred - color_img
         diff = diff * mask
         num_pixels = np.sum(mask)
-        return np.sum(np.sqrt(np.square(diff) + self.epsilon**2)) \
-        / (num_pixels + self.epsilon) \ 
-        / len(pred) # divide the batch size and the unknown region
+        return np.sum(np.sqrt(np.square(diff) + self.epsilon**2)) / \
+        (num_pixels + self.epsilon)  / \
+        len(pred) # divide the batch size and the unknown region
 
     def overall_loss(self, pred, mask, alpha, color_img, fg, bg):
         # average the above two losses
