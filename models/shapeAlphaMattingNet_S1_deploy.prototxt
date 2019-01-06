@@ -814,6 +814,7 @@ layer {
     layer: "AlphaMattingLossLayer"
     param_str : '{
       "epsilon": 1e-6
+      "w_l": 0.5
       }'
   }
   loss_weight: 1
