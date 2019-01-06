@@ -28,7 +28,9 @@ layer {
   type: "HDF5Data"
   top: "data"
   top: "tri-map"
-  top: "label"
+  top: "gt"
+  top: "fg"
+  top: "bg"
   hdf5_data_param {
     source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
     batch_size: 4
@@ -42,7 +44,9 @@ layer {
   type: "HDF5Data"
   top: "data"
   top: "tri-map"
-  top: "label"
+  top: "gt"
+  top: "fg"
+  top: "bg"
   hdf5_data_param {
     source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
     batch_size: 4
@@ -53,7 +57,7 @@ layer {
 }
 # Add concat layer to concat tri-map and raw images.
 layer {
-  name: "concat"
+  name: "concat_train"
   bottom: "tri-map"
   bottom: "data"
   top: "train_data"
@@ -781,20 +785,36 @@ layer {
 layer {
   name: "sigmoid_output"
   bottom: "conv_output"
-  top: "sigmoid"
+  top: "sigmoid_pred"
   type: "Sigmoid"
 }
 
 # ---------------------------- Loss ---------------------------
+# concat a y_true blob for alpha loss
 layer {
-  name: "alpha_prediction_loss"
+  name: "concat_y_true"
+  type: "Concat"
+  bottom: "train_data"
+  bottom: "gt"
+  bottom: "fg"
+  bottom: "bg"
+  top: "y_true"
+  concat_param {
+    axis: 1  # axis=1 represents that the concat is adding the channels
+  }
+}
+layer {
+  name: "loss"
   type: "Python"
-  bottom: "sigmoid"
-  bottom: "label"
-  top: "alpha_prediction_loss"
+  bottom: "sigmoid_pred"
+  bottom: "y_true"
+  top: "loss"
   python_param {
-    module: "rootSquareLoss"
-    layer: "RootSquareLossLayer"
+    module: "alphaLoss"
+    layer: "AlphaMattingLossLayer"
+    param_str : '{
+      "epsilon": 1e-6
+      }'
   }
   loss_weight: 1
 }
@@ -802,12 +822,12 @@ layer {
 layer {
   name: "accuracy"
   type: "Python"
-  bottom: "sigmoid"
-  bottom: "label"
+  bottom: "sigmoid_pred"
+  bottom: "y_true"
   top: "accuracy"
   python_param {
-    module: "rootSquareLoss"
-    layer: "RootSquareLossLayer"
+    module: "alphaLoss"
+    layer: "AlphaMattingLossLayer"
   }
   loss_weight: 1
   include {
