@@ -50,15 +50,13 @@ class AlphaMattingLossLayer(caffe.Layer):
         alpha = bottom[1][:, 4, :, :]
         fg = bottom[1][:, 5:8, :, :]
         bg = bottom[1][:, 8:11, :, :]
-        # self.diff[...] = pred - alpha
         top[0].data[...] = self.overall_loss(pred, mask, alpha, color_img, fg, bg)
         pred = np.reshape(pred, (-1, 1, self.shape[0], self.shape[1]))
         alpha = np.reshape(alpha, (-1, 1, self.shape[0], self.shape[1]))
         self.diff[...] = pred - alpha
 
     def backward(self, top, progagate_down, bottom):
-        # calculate gradient here.
-        # backpropogate the gradient
+        # calculate backpropogation gradient here.
         for i in range(2):
             if not progagate_down[i]:
                 continue
