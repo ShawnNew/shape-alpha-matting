@@ -72,8 +72,8 @@ if __name__ == '__main__':
                     if not len(items) == 5:
                         raise Exception("columns of each line is not right.")
                     
-                    raw_tri_map_ = cv2.imread(items[0]).astype(np.float64)
-                    raw_img_ = cv2.imread(items[1]).astype(np.uint8)
+                    raw_tri_map_ = cv2.imread(items[0]).astype(np.uint8)
+                    raw_img_ = cv2.imread(items[1]).astype(np.float64)
                     raw_gt_ = cv2.imread(items[2]).astype(np.uint8)
                     raw_fg_ = cv2.imread(items[3]).astype(np.float64)
                     raw_bg_ = cv2.imread(items[4]).astype(np.float64)
