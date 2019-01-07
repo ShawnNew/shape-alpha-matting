@@ -28,9 +28,11 @@ layer {
   type: "HDF5Data"
   top: "data"
   top: "tri-map"
-  top: "label"
+  top: "gt"
+  top: "fg"
+  top: "bg"
   hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/alphamatting.txt"
+    source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
     batch_size: 4
   }
   include {
@@ -38,9 +40,24 @@ layer {
   }
 }
 
+layer {
+  type: "HDF5Data"
+  top: "data"
+  top: "tri-map"
+  top: "gt"
+  top: "fg"
+  top: "bg"
+  hdf5_data_param {
+    source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
+    batch_size: 4
+  }
+  include {
+    phase: TEST
+  }
+}
 # Add concat layer to concat tri-map and raw images.
 layer {
-  name: "concat"
+  name: "concat_train"
   bottom: "tri-map"
   bottom: "data"
   top: "train_data"
@@ -448,42 +465,42 @@ layer {
 # The above is same as VGG-16, the following is adapted for matting.
 # Initialze this layer with random value, and train this layer from
 # start.
-layer {
-  name: "conv6_1"
-  bottom: "pool5"
-  top: "conv6_1"
-  type: "Convolution"
-  param {
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 20
-    decay_mult: 0
-  }
-  convolution_param {
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-    num_output: 4096
-    pad: 1
-    kernel_size: 7
-  }    
-}
-layer {
-  bottom: "conv6_1"
-  top: "conv6_1"
-  name: "relu5_3"
-  type: "ReLU"
-}
+# layer {
+#   name: "conv6_1"
+#   bottom: "pool5"
+#   top: "conv6_1"
+#   type: "Convolution"
+#   param {
+#     lr_mult: 10
+#     decay_mult: 1
+#   }
+#   param {
+#     lr_mult: 20
+#     decay_mult: 0
+#   }
+#   convolution_param {
+#     weight_filler {
+#       type: "xavier"
+#     }
+#     bias_filler {
+#       type: "constant"
+#       value: 0
+#     }
+#     num_output: 4096
+#     pad: 0
+#     kernel_size: 7
+#   }    
+# }
+# layer {
+#   bottom: "conv6_1"
+#   top: "conv6_1"
+#   name: "relu5_3"
+#   type: "ReLU"
+# }
 
 # ------------------------ Decoder ---------------------------
 layer {
-  bottom: "conv6_1"
+  bottom: "pool5"
   top: "deconv_6"
   name: "deconv_6"
   type: "Convolution"
@@ -504,7 +521,7 @@ layer {
       value: 0
     }
     num_output: 512
-    pad: 1
+    pad: 0
     kernel_size: 1
   }    
 }
@@ -524,7 +541,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 12
+    unpool_size: 14
   }
 }
 layer {
@@ -549,7 +566,7 @@ layer {
       value: 0
     }
     num_output: 512
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
@@ -569,7 +586,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 12
+    unpool_size: 28
   }
 }
 layer {
@@ -594,7 +611,7 @@ layer {
       value: 0
     }
     num_output: 256
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
@@ -614,7 +631,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 12
+    unpool_size: 56
   }
 }
 layer {
@@ -639,7 +656,7 @@ layer {
       value: 0
     }
     num_output: 128
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
@@ -659,7 +676,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 12
+    unpool_size: 112
   }
 }
 layer {
@@ -684,7 +701,7 @@ layer {
       value: 0
     }
     num_output: 64
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
@@ -704,7 +721,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 12
+    unpool_size: 224
   }
 }
 layer {
@@ -729,7 +746,7 @@ layer {
       value: 0
     }
     num_output: 64
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
@@ -761,27 +778,60 @@ layer {
       value: 0
     }
     num_output: 1
-    pad: 1
+    pad: 2
     kernel_size: 5
   }    
 }
 layer {
   name: "sigmoid_output"
   bottom: "conv_output"
-  top: "sigmoid"
+  top: "sigmoid_pred"
   type: "Sigmoid"
 }
 
 # ---------------------------- Loss ---------------------------
+# concat a y_true blob for alpha loss
 layer {
-  name: "alpha_prediction_loss"
+  name: "concat_y_true"
+  type: "Concat"
+  bottom: "train_data"
+  bottom: "gt"
+  bottom: "fg"
+  bottom: "bg"
+  top: "y_true"
+  concat_param {
+    axis: 1  # axis=1 represents that the concat is adding the channels
+  }
+}
+layer {
+  name: "loss"
   type: "Python"
-  bottom: "sigmoid"
-  bottom: "label"
-  top: "alpha_prediction_loss"
+  bottom: "sigmoid_pred"
+  bottom: "y_true"
+  top: "loss"
   python_param {
-    module: "rootSquareLoss"
-    layer: "RootSquareLossLayer"
+    module: "alphaLoss"
+    layer: "AlphaMattingLossLayer"
+    param_str : '{
+      "epsilon": 1e-6
+      "w_l": 0.5
+      }'
   }
   loss_weight: 1
+}
+
+layer {
+  name: "accuracy"
+  type: "Python"
+  bottom: "sigmoid_pred"
+  bottom: "y_true"
+  top: "accuracy"
+  python_param {
+    module: "alphaLoss"
+    layer: "AlphaMattingLossLayer"
+  }
+  loss_weight: 1
+  include {
+    phase: TEST
+  }
 }
