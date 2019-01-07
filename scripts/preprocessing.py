@@ -92,10 +92,10 @@ if __name__ == '__main__':
                     
                     if img_count_+1 == SAMPLES: # write SAMPLES images into hdf5 file
                         file_count += 1
-                        filepath = os.path.join(output_dir_, 'train'+str(file_count))
+                        filepath = os.path.join(output_dir_, file.replace(".txt", "")+str(file_count))
                         print "Writing file:", filepath
                         writeH5Files(OUTPUT_DIR, data, tri_map, gt, fg, bg, filepath)
-                filepath = os.path.join(output_dir_, 'train'+str(file_count+1))
+                filepath = os.path.join(output_dir_, file.replace(".txt", "")+str(file_count+1))
                 print "Writing file:", filepath
                 writeH5Files(OUTPUT_DIR, data, tri_map, gt, fg, bg, filepath)
                 print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
