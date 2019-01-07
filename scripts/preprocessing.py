@@ -88,7 +88,7 @@ if __name__ == '__main__':
                     gt[img_count_] = caffeTransform(raw_gt_, RAW_IMAGE_SIZE)
                     fg[img_count_] = caffeTransform(raw_fg_, RAW_IMAGE_SIZE)
                     bg[img_count_] = caffeTransform(raw_bg_, RAW_IMAGE_SIZE)
-                    print "Processed %d images"% i+1
+                    print "Processed %d images"% int(i+1)
                     
                     if img_count_+1 == SAMPLES: # write SAMPLES images into hdf5 file
                         file_count += 1
