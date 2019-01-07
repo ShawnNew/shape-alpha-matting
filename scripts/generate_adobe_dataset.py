@@ -36,7 +36,7 @@ def writeFile(fn, perm):
                     + original_list[i] + ' ' \
                     + gt_list[i] + ' ' \
                     + fg_list[i] + ' ' \
-                    + bg_list[i] + ' '
+                    + bg_list[i] + '\n'
             f.write(line_)
 
 if __name__ == '__main__':
@@ -73,6 +73,9 @@ if __name__ == '__main__':
         val_perm_ = perm[len_ * train_prop / 100: \
                          len_ * (train_prop + val_prop) / 100]
         test_perm_ = perm[len_ * (train_prop + val_prop) / 100 :]
+	train_path = os.path.join(DATASET_DIR, 'train.txt')
+	val_path = os.path.join(DATASET_DIR, 'val.txt')
+	test_path = os.path.join(DATASET_DIR, 'test.txt')
         writeFile('train.txt', train_perm_)
         writeFile('val.txt', val_perm_)
         writeFile('test.txt', test_perm_)
