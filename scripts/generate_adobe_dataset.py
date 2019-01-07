@@ -76,8 +76,8 @@ if __name__ == '__main__':
 	train_path = os.path.join(DATASET_DIR, 'train.txt')
 	val_path = os.path.join(DATASET_DIR, 'val.txt')
 	test_path = os.path.join(DATASET_DIR, 'test.txt')
-        writeFile('train.txt', train_perm_)
-        writeFile('val.txt', val_perm_)
-        writeFile('test.txt', test_perm_)
+    writeFile(train_path, train_perm_)
+    writeFile(val_path, val_perm_)
+    writeFile(test_path, test_perm_)
 
     
