@@ -72,8 +72,8 @@ if __name__ == '__main__':
                     if not len(items) == 5:
                         raise Exception("columns of each line is not right.")
                     
-                    raw_tri_map_ = cv2.imread(items[0]).astype(np.float64)
-                    raw_img_ = cv2.imread(items[1]).astype(np.uint8)
+                    raw_tri_map_ = cv2.imread(items[0]).astype(np.uint8)
+                    raw_img_ = cv2.imread(items[1]).astype(np.float64)
                     raw_gt_ = cv2.imread(items[2]).astype(np.uint8)
                     raw_fg_ = cv2.imread(items[3]).astype(np.float64)
                     raw_bg_ = cv2.imread(items[4]).astype(np.float64)
@@ -88,16 +88,19 @@ if __name__ == '__main__':
                     gt[img_count_] = caffeTransform(raw_gt_, RAW_IMAGE_SIZE)
                     fg[img_count_] = caffeTransform(raw_fg_, RAW_IMAGE_SIZE)
                     bg[img_count_] = caffeTransform(raw_bg_, RAW_IMAGE_SIZE)
-                    print "Processed %d images"% i+1
+                    print "Processed %d samples"% int(i+1)
                     
                     if img_count_+1 == SAMPLES: # write SAMPLES images into hdf5 file
                         file_count += 1
-                        filepath = os.path.join(output_dir_, 'train'+str(file_count))
+                        filename = file.replace(".txt", "") + str(file_count) + ".h5"
+                        filepath = os.path.join(output_dir_, filename)
                         print "Writing file:", filepath
                         writeH5Files(OUTPUT_DIR, data, tri_map, gt, fg, bg, filepath)
-                filepath = os.path.join(output_dir_, 'train'+str(file_count+1))
+                filename = file.replace(".txt", "") + str(file_count+1) +  ".h5"
+                filepath = os.path.join(output_dir_, filename)
                 print "Writing file:", filepath
                 writeH5Files(OUTPUT_DIR, data, tri_map, gt, fg, bg, filepath)
                 print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-
-            # writeH5Files(OUTPUT_DIR, data, tri_map, gt, fg, bg, file.replace(".txt", ""))
+            # write hdf5 files list into txt file, which will be used in caffe data layer
+            writeH5TxtFile(OUTPUT_DIR, file)
+    

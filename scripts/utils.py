@@ -3,13 +3,12 @@ import h5py
 import cv2
 import numpy as np
 
-def writeH5Files(out_dir, data, tri_map, gt, fg, bg, fn):
+def writeH5Files(out_dir, data, tri_map, gt, fg, bg, file):
     """
     Write the formatted data into hdf5 file
     """
-    h5_filedir = fn + ".h5"
     # h5_filedir = os.path.join(out_dir, h5_filename)
-    hdf_file = h5py.File(h5_filedir, 'w')
+    hdf_file = h5py.File(file, 'w')
     data_shape = data[0].shape
     greyscale_shape = tri_map[0].shape
     chunks_data = (1, data_shape[0], data_shape[1], data_shape[2])
@@ -27,7 +26,8 @@ def writeH5Files(out_dir, data, tri_map, gt, fg, bg, fn):
 
 def writeH5TxtFile(out_dir, h5dir):
     text_filename = h5dir + ".txt"
-    text_filespath = os.path.join(out_dir, text_filename)
+    text_filename = os.path.join(out_dir, text_filename)
+    text_filespath = os.path.join(out_dir, h5dir)
     files = os.listdir(text_filespath)
     with open(text_filename, 'w') as f:
         for file in files:
