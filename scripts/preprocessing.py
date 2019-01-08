@@ -88,16 +88,19 @@ if __name__ == '__main__':
                     gt[img_count_] = caffeTransform(raw_gt_, RAW_IMAGE_SIZE)
                     fg[img_count_] = caffeTransform(raw_fg_, RAW_IMAGE_SIZE)
                     bg[img_count_] = caffeTransform(raw_bg_, RAW_IMAGE_SIZE)
-                    print "Processed %d images"% int(i+1)
+                    print "Processed %d samples"% int(i+1)
                     
                     if img_count_+1 == SAMPLES: # write SAMPLES images into hdf5 file
                         file_count += 1
-                        filepath = os.path.join(output_dir_, file.replace(".txt", "")+str(file_count))
+                        filename = file.replace(".txt", "") + str(file_count) + ".h5"
+                        filepath = os.path.join(output_dir_, filename)
                         print "Writing file:", filepath
                         writeH5Files(OUTPUT_DIR, data, tri_map, gt, fg, bg, filepath)
-                filepath = os.path.join(output_dir_, file.replace(".txt", "")+str(file_count+1))
+                filename = file.replace(".txt", "") + str(file_count+1) +  ".h5"
+                filepath = os.path.join(output_dir_, filename)
                 print "Writing file:", filepath
                 writeH5Files(OUTPUT_DIR, data, tri_map, gt, fg, bg, filepath)
                 print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-
-            # writeH5Files(OUTPUT_DIR, data, tri_map, gt, fg, bg, file.replace(".txt", ""))
+            # write hdf5 files list into txt file, which will be used in caffe data layer
+            writeH5TxtFile(OUTPUT_DIR, file)
+    
