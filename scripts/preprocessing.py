@@ -102,5 +102,5 @@ if __name__ == '__main__':
                 writeH5Files(OUTPUT_DIR, data, tri_map, gt, fg, bg, filepath)
                 print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
             # write hdf5 files list into txt file, which will be used in caffe data layer
-            writeH5TxtFile(OUTPUT_DIR, file)
+            writeH5TxtFile(OUTPUT_DIR, file.replace(".txt", ""))
     
