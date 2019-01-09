@@ -4,3 +4,4 @@ dataset
 *.pyc
 *.swp
 log
+*snapshots/

@@ -31,7 +31,7 @@ def writeH5TxtFile(out_dir, h5dir):
     files = os.listdir(text_filespath)
     with open(text_filename, 'w') as f:
         for file in files:
-            line_ = file + '\n'
+            line_ = text_filespath + '/' + file + '\n'
             f.write(line_)
 
 def getFileList(base, sub):

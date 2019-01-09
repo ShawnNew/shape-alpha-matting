@@ -1,5 +1,6 @@
 import caffe
 import numpy as np
+import glog
 
 class AlphaMattingLossLayer(caffe.Layer):
     """
@@ -34,22 +35,21 @@ class AlphaMattingLossLayer(caffe.Layer):
         params = eval(self.param_str)
         self.epsilon = params["epsilon"]
         self.w_l = params["w_l"]
-        self.shape = bottom[0][0][0].shape
-
+        self.shape = bottom[0].data[0][0].shape
+        glog.info('loss layer setup done.')
 
     def reshape(self, bottom, top):
         self.diff = np.zeros_like(bottom[0].data, dtype=np.float32)
-        # reshape the loss output
         top[0].reshape(1)
 
     def forward(self, bottom, top):
         # calculate loss here
-        pred = bottom[0][:, 0, :, :]
-        mask = bottom[1][:, 0, :, :]
-        color_img = bottom[1][:, 1:4, :, :]
-        alpha = bottom[1][:, 4, :, :]
-        fg = bottom[1][:, 5:8, :, :]
-        bg = bottom[1][:, 8:11, :, :]
+        pred = bottom[0].data[:, 0, :, :]
+        mask = bottom[1].data[:, 0, :, :]
+        color_img = bottom[1].data[:, 1:4, :, :]
+        alpha = bottom[1].data[:, 4, :, :]
+        fg = bottom[1].data[:, 5:8, :, :]
+        bg = bottom[1].data[:, 8:11, :, :]
         top[0].data[...] = self.overall_loss(pred, mask, alpha, color_img, fg, bg)
         pred = np.reshape(pred, (-1, 1, self.shape[0], self.shape[1]))
         alpha = np.reshape(alpha, (-1, 1, self.shape[0], self.shape[1]))
@@ -57,25 +57,28 @@ class AlphaMattingLossLayer(caffe.Layer):
 
     def backward(self, top, progagate_down, bottom):
         # calculate backpropogation gradient here.
-        for i in range(2):
-            if not progagate_down[i]:
-                continue
-            if i == 0:
-                sign = 1
-            else:
-                sign = -1
-            bottom[i].diff[...] = sign * self.diff \
-                                    / top[0].data \
-                                    / bottom[i].num
-    
+        #for i in range(2):
+        #    if not progagate_down[i]:
+        #        continue
+        #    if i == 0:
+        #        sign = 1
+        #    else:
+        #        sign = -1
+        #    bottom[i].diff[...] = sign * self.diff \
+        #                            / top[0].data \
+                                    # / bottom[i].num
+        for i in range(len(bottom[0].data)):
+            bottom[0].diff[i][0] = np.dot(self.diff[i][0] / top[0].data, bottom[0].data[i][0])
+        #bottom[0].diff[...] = (self.diff / top[0].data) * bottom[0].data 
+       
     def alpha_prediction_loss(self, mask, pred, alpha):
         # calculate alpha_prediction_loss here
         diff = pred - alpha
         diff = diff * mask       # element-wise multiply
         num_pixels = np.sum(mask)
         return np.sum(np.sqrt(np.square(diff) + self.epsilon**2)) \
-        / (num_pixels + self.epsilon) \
-        / len(pred) # divid the batch size and the unknown region
+        / (num_pixels + self.epsilon)
+        #/ len(pred) # divid the batch size and the unknown region
 
     def compositional_loss(self, pred, mask, color_img, fg, bg):
         # calculate compositional_loss here
@@ -85,9 +88,9 @@ class AlphaMattingLossLayer(caffe.Layer):
         diff = color_pred - color_img
         diff = diff * mask
         num_pixels = np.sum(mask)
-        return np.sum(np.sqrt(np.square(diff) + self.epsilon**2)) / \
-        (num_pixels + self.epsilon)  / \
-        len(pred) # divide the batch size and the unknown region
+        return np.sum(np.sqrt(np.square(diff) + self.epsilon**2)) \
+        / (num_pixels + self.epsilon)
+        #/ len(pred) # divide the batch size and the unknown region
 
     def overall_loss(self, pred, mask, alpha, color_img, fg, bg):
         # average the above two losses
