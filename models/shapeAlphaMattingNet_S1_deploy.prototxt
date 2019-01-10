@@ -33,7 +33,7 @@ layer {
   top: "bg"
   hdf5_data_param {
     source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
-    batch_size: 4
+    batch_size: 10
   }
   include {
     phase: TRAIN
@@ -48,8 +48,8 @@ layer {
   top: "fg"
   top: "bg"
   hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
-    batch_size: 4
+    source: "/home/dl/Codes/shape-alpha-matting/dataset/test.txt"
+    batch_size: 10
   }
   include {
     phase: TEST
@@ -66,6 +66,17 @@ layer {
     axis: 1  # axis=1 represents that the concat is adding the channels
   }
 }
+
+# layer {
+#   name: "scale"
+#   bottom: "train_data"
+#   top: "train_data"
+#   type: "Scaled"
+#   scale_param {
+#     value: 255
+#   }
+# }
+
 # The first conv layer is different from VGG-16's, due to the add-on
 # channel tri-map. Within this layer, set the learning rate at a
 # higher level, because this layer is initialized with random value.
@@ -803,6 +814,14 @@ layer {
     axis: 1  # axis=1 represents that the concat is adding the channels
   }
 }
+
+# layer {
+#   name: "loss"
+#   type: "EuclideanLoss"
+#   top: "loss"
+#   bottom: "sigmoid_pred"
+#   bottom: "gt"
+# }
 layer {
   name: "loss"
   type: "Python"
@@ -812,10 +831,7 @@ layer {
   python_param {
     module: "alphaLoss"
     layer: "AlphaMattingLossLayer"
-    param_str : '{
-      "epsilon": 1e-6
-      "w_l": 0.5
-      }'
+    param_str: '{"epsilon": 1e-6,"w_l": 0.5}'
   }
   loss_weight: 1
 }
@@ -829,6 +845,7 @@ layer {
   python_param {
     module: "alphaLoss"
     layer: "AlphaMattingLossLayer"
+    param_str: '{"epsilon": 1e-6,"w_l": 0.5}'
   }
   loss_weight: 1
   include {
