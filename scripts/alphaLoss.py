@@ -100,13 +100,13 @@ class AlphaMattingLossLayer(caffe.Layer):
         # print diff
         # print "=============================================="
         # self.diff_alpha = np.average(diff, axis=0)            
-        diff = diff * mask       # element-wise multiply        
+        #diff = diff * mask       # element-wise multiply        
         self.diff_alpha = diff
         num_pixels = np.sum(mask)
         self.sqrt_alpha = np.sqrt(np.square(diff) + self.epsilon**2)
         # self.sqrt_alpha = np.average(self.sqrt_alpha, axis = 0)
-        return np.sum(self.sqrt_alpha) \
-        / (num_pixels + self.epsilon) \
+        return np.sum(self.sqrt_alpha) / (10 * 224 * 224)\
+        #/ (num_pixels + self.epsilon) \
         # / len(pred) # divid the batch size and the unknown region
 
     def compositional_loss(self, pred, mask, color_img, fg, bg):
@@ -116,23 +116,23 @@ class AlphaMattingLossLayer(caffe.Layer):
         color_pred = pred * fg + (1.0 - pred) * bg    # element-wise multiply to get color image
         diff = color_pred - color_img   # 3 channels
         # self.diff_comp = np.average(np.average(diff, axis=0), axis=0)        
-        diff = diff * mask
+        #diff = diff * mask
         self.diff_comp = np.average(diff, axis=1)
         num_pixels = np.sum(mask)
         # self.sqrt_comp = np.average(np.average(np.sqrt(np.square(diff) + self.epsilon**2), \
         #                              axis=0), axis=0)
         self.sqrt_comp = np.average(np.sqrt(np.square(diff) + self.epsilon**2), \
                                      axis=1)  # rgb average (4*1*224*224)
-        return np.sum(self.sqrt_comp) \
-        / (num_pixels + self.epsilon) \
+        return np.sum(self.sqrt_comp) / (10 * 224 * 224 )\
+        #/ (num_pixels + self.epsilon) \
         # / len(pred) # divide the batch size and the unknown region
 
 
     def overall_loss(self, pred, mask, alpha, color_img, fg, bg):                
         # average the above two losses        
-        mask[mask == 0.] *= 0.
-        mask[mask == 1.] *= 0.
-        mask[mask != 0.] = 1.
+        # mask[mask == 0.] *= 0.
+        # mask[mask == 1.] *= 0.
+        # mask[mask != 0.] = 1.
         alpha_loss = self.alpha_prediction_loss(mask, pred, alpha)
         comp_loss = self.compositional_loss(pred, mask, color_img, fg, bg)
         # glog.warn("alpha loss: " + str(alpha_loss) + " comp loss: " + str(comp_loss))
