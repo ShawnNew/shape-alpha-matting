@@ -1,9 +1,7 @@
 import caffe
 import numpy as np
 import glog
-import cv2
 import pdb
-from PIL import Image
 
 class AlphaMattingLossLayer(caffe.Layer):
     """
@@ -42,61 +40,85 @@ class AlphaMattingLossLayer(caffe.Layer):
         glog.info('loss layer setup done.')
 
     def reshape(self, bottom, top):
-        self.diff = np.zeros_like(bottom[0].data, dtype=np.float32)
+        self.pred = bottom[0].data[:,0,:,:]
+        self.mask = bottom[1].data[:,0,:,:]
+        self.color_img = bottom[1].data[:,1:4,:,:]
+        self.alpha = bottom[1].data[:,4,:,:]
+        self.fg = bottom[1].data[:,5:8,:,:]
+        self.bg = bottom[1].data[:,8:11,:,:]
+        self.pred = np.reshape(self.pred, (-1, 1, self.shape[0], self.shape[1]))
+        self.mask = np.reshape(self.mask, (-1, 1, self.shape[0], self.shape[1]))
+        self.alpha = np.reshape(self.alpha, (-1, 1, self.shape[0], self.shape[1]))
         top[0].reshape(1)
 
     def forward(self, bottom, top):
         # calculate loss here
-        pred = bottom[0].data[:, 0, :, :]
-        mask = bottom[1].data[:, 0, :, :]
-        color_img = bottom[1].data[:, 1:4, :, :]
-        alpha = bottom[1].data[:, 4, :, :]
-        fg = bottom[1].data[:, 5:8, :, :]
-        bg = bottom[1].data[:, 8:11, :, :]
-        top[0].data[...] = self.overall_loss(pred, mask, alpha, color_img, fg, bg)        
+        top[0].data[...] = self.overall_loss(
+                                             self.pred, 
+                                             self.mask,
+                                             self.alpha,
+                                             self.color_img,
+                                             self.fg,
+                                             self.bg)        
 
 
     def backward(self, top, progagate_down, bottom):
-        self.diff_alpha = np.reshape(self.diff_alpha, (-1, 1, self.shape[0], self.shape[1])) 
-        self.sqrt_alpha = np.reshape(self.sqrt_alpha, (-1, 1, self.shape[0], self.shape[1]))
-        self.diff_comp = np.reshape(self.diff_alpha, (-1, 1, self.shape[0], self.shape[1])) 
-        self.sqrt_comp = np.reshape(self.sqrt_comp, (-1, 1, self.shape[0], self.shape[1]))       
-        temp = self.w_l * self.diff_alpha / self.sqrt_alpha + \
-                                (1 - self.w_l) * self.diff_comp / self.sqrt_comp
-        bottom[0].diff[...] = temp
-       
+        # pass gradient back
+        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~BackProp~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        bottom[0].diff[...] = self.computeGradient(
+                                                   self.pred,
+                                                   self.mask,
+                                                   self.alpha,
+                                                   self.color_img,
+                                                   self.fg,
+                                                   self.bg)
+
     def alpha_prediction_loss(self, mask, pred, alpha):
         # calculate alpha_prediction_loss here
-        diff = pred - alpha                                  # 4*224*224          
-        diff = diff * mask                                   # element-wise multiply        
-        self.diff_alpha = diff
+        diff = (pred - alpha) * mask                         # 4*224*224          
         num_pixels = np.sum(mask)
-        self.sqrt_alpha = np.sqrt(np.square(self.diff_alpha) + self.epsilon**2)
-        return np.sum(self.sqrt_alpha) \
+        sqrt_ = np.sqrt(np.square(diff) + self.epsilon**2)
+        return np.sum(sqrt_) \
         / (num_pixels + self.epsilon)
 
     def compositional_loss(self, pred, mask, color_img, fg, bg):
         # calculate compositional_loss here
         mask = np.reshape(mask, (-1, 1, self.shape[0], self.shape[1]))
         pred = np.reshape(pred, (-1, 1, self.shape[0], self.shape[1]))
-        color_pred = pred * fg + (1.0 - pred) * bg           # element-wise multiply to get color image
-        diff = color_pred - color_img                        # 3 channels      
-        diff = diff * mask
-        self.diff_comp = np.average(diff, axis=1)            # average over rgb
+        self.color_pred = pred * fg + (1.0 - pred) * bg      # element-wise multiply to get color image
+        diff = (self.color_pred - color_img) * mask          # 3 channels      
         num_pixels = np.sum(mask)
-        self.sqrt_comp = np.sqrt(
-            np.square(self.diff_comp) + self.epsilon**2)     # shape of (4*1*224*224)
-        return np.sum(self.sqrt_comp) \
+        diff = np.average(diff, axis=1)                      # average over color channel
+        sqrt_ = np.sqrt(np.square(diff) + self.epsilon**2)   # shape of (4*1*224*224)
+        return np.sum(sqrt_) \
         / (num_pixels + self.epsilon)
 
 
     def overall_loss(self, pred, mask, alpha, color_img, fg, bg):                
-        # average the above two losses        
-        # mask[mask == 0.] *= 0.
-        # mask[mask == 1.] *= 0.
-        # mask[mask != 0.] = 1.
+        # average the above two losses
+        mask[mask == 0.] *= 0.
+        mask[mask == 1.] *= 0.
+        mask[mask != 0.] = 1.                                # extract mask area
         alpha_loss = self.alpha_prediction_loss(mask, pred, alpha)
         comp_loss = self.compositional_loss(pred, mask, color_img, fg, bg)
         return self.w_l * alpha_loss + \
                 (1 - self.w_l) * comp_loss
+
+    def computeGradient(self, pred, mask, alpha, color_img, fg, bg):
+        # calculate gradient here
+        alpha_diff_ = pred - alpha
+        alpha_sqrt_ = np.sqrt(np.square(alpha_diff_) + self.epsilon**2)
+        comp_diff_ = self.color_pred - color_img
+        comp_sqrt_ = np.sqrt(np.square(comp_diff_) + self.epsilon**2)
+        fb_diff_ = fg - bg  # difference between foreground and background
         
+        alpha_gradient_ = 2 * alpha_diff_ / alpha_sqrt_
+        comp_gradient_ = 2 * comp_diff_ * fb_diff_ / comp_sqrt_
+        comp_gradient_ = np.average(comp_gradient_, axis=1) # average over color channel
+        comp_gradient_ = np.reshape(comp_gradient_, (-1, 1, self.shape[0], self.shape[1]))
+
+        overall_gradient_ = self.w_l * alpha_gradient_ + \
+                         (1 - self.w_l) * comp_gradient_    # over gradient along pixel
+        print overall_gradient_
+        return overall_gradient_
+          

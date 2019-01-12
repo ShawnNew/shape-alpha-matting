@@ -86,11 +86,11 @@ layer {
   name: "conv1_1_matting"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -516,11 +516,11 @@ layer {
   name: "deconv_6"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -542,6 +542,15 @@ layer {
   top: "deconv_6"
   type: "ReLU"
 }
+
+# layer {
+#   name: "norm_6"
+#   bottom: "deconv_6"
+#   top: "deconv_6"
+#   type: "BatchNorm"
+#   # batch_norm_param {}
+# }
+
 layer {
   name: "unpool5_1"
   bottom: "deconv_6"
@@ -561,11 +570,11 @@ layer {
   name: "deconv5_2"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -587,6 +596,15 @@ layer {
   top: "deconv5_2"
   type: "ReLU"
 }
+
+# layer {
+#   name: "norm5_2"
+#   bottom: "deconv5_2"
+#   top: "deconv5_2"
+#   type: "BatchNorm"
+#   # batch_norm_param {}
+# }
+
 layer {
   name: "unpool4_1"
   bottom: "deconv5_2"
@@ -606,11 +624,11 @@ layer {
   name: "deconv4_2"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -632,6 +650,15 @@ layer {
   top: "deconv4_2"
   type: "ReLU"
 }
+
+# layer {
+#   name: "norm4_2"
+#   bottom: "deconv4_2"
+#   top: "deconv4_2"
+#   type: "BatchNorm"
+#   # batch_norm_param {}
+# }
+
 layer {
   name: "unpool3_1"
   bottom: "deconv4_2"
@@ -651,11 +678,11 @@ layer {
   name: "deconv3_2"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -677,6 +704,15 @@ layer {
   top: "deconv3_2"
   type: "ReLU"
 }
+
+# layer {
+#   name: "norm3_2"
+#   bottom: "deconv3_2"
+#   top: "deconv3_2"
+#   type: "BatchNorm"
+#   # batch_norm_param {}
+# }
+
 layer {
   name: "unpool2_1"
   bottom: "deconv3_2"
@@ -696,11 +732,11 @@ layer {
   name: "deconv2_2"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -722,6 +758,15 @@ layer {
   top: "deconv2_2"
   type: "ReLU"
 }
+
+# layer {
+#   name: "norm2_2"
+#   bottom: "deconv2_2"
+#   top: "deconv2_2"
+#   type: "BatchNorm"
+#   # batch_norm_param {}
+# }
+
 layer {
   name: "unpool1_1"
   bottom: "deconv2_2"
@@ -741,11 +786,11 @@ layer {
   top: "deconv1_2"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -767,17 +812,26 @@ layer {
   top: "deconv1_2"
   type: "ReLU"
 }
+
+# layer {
+#   name: "norm1_2"
+#   bottom: "deconv1_2"
+#   top: "deconv1_2"
+#   type: "BatchNorm"
+#   # batch_norm_param {}
+# }
+
 layer {
   name: "conv_output"
   bottom: "deconv1_2"
   top: "conv_output"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -822,6 +876,20 @@ layer {
 #   bottom: "sigmoid_pred"
 #   bottom: "gt"
 # }
+
+# layer {
+#   name: "accuracy"
+#   type: "EuclideanLoss"
+#   top: "accuracy"
+#   bottom: "sigmoid_pred"
+#   bottom: "gt"
+#   include {
+#     phase: TEST
+#   }
+# }
+
+
+
 layer {
   name: "loss"
   type: "Python"
