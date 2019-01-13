@@ -1,7 +1,7 @@
 net: "/home/dl/Codes/shape-alpha-matting/models/shapeAlphaMattingNet_S1_deploy.prototxt"
 test_iter: 120
 test_interval: 2000
-base_lr: 0.0001
+base_lr: 0.00001
 lr_policy: "step"
 gamma: 0.1
 stepsize: 5000
@@ -10,5 +10,5 @@ max_iter: 450000
 momentum: 0.9
 weight_decay: 0.0005
 snapshot: 10000
-snapshot_prefix: "/home/dl/Codes/shape-alpha-matting/models/snapshots/Training"
+snapshot_prefix: "/home/dl/Codes/shape-alpha-matting/models/snapshots/20190113/Training"
 solver_mode: GPU

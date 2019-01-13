@@ -869,6 +869,7 @@ layer {
   }
 }
 
+# ==================== C++ version euclideanloss =================
 # layer {
 #   name: "loss"
 #   type: "EuclideanLoss"
@@ -888,14 +889,13 @@ layer {
 #   }
 # }
 
-
-
+# ================== python version euclideanloss =================
 layer {
   name: "loss"
   type: "Python"
+  top: "loss"
   bottom: "sigmoid_pred"
   bottom: "y_true"
-  top: "loss"
   python_param {
     module: "alphaLoss"
     layer: "AlphaMattingLossLayer"
@@ -907,9 +907,9 @@ layer {
 layer {
   name: "accuracy"
   type: "Python"
+  top: "accuracy"
   bottom: "sigmoid_pred"
   bottom: "y_true"
-  top: "accuracy"
   python_param {
     module: "alphaLoss"
     layer: "AlphaMattingLossLayer"
@@ -920,3 +920,36 @@ layer {
     phase: TEST
   }
 }
+
+
+
+# layer {
+#   name: "loss"
+#   type: "Python"
+#   bottom: "sigmoid_pred"
+#   bottom: "y_true"
+#   top: "loss"
+#   python_param {
+#     module: "alphaLoss"
+#     layer: "AlphaMattingLossLayer"
+#     param_str: '{"epsilon": 1e-6,"w_l": 0.5}'
+#   }
+#   loss_weight: 1
+# }
+
+# layer {
+#   name: "accuracy"
+#   type: "Python"
+#   bottom: "sigmoid_pred"
+#   bottom: "y_true"
+#   top: "accuracy"
+#   python_param {
+#     module: "alphaLoss"
+#     layer: "AlphaMattingLossLayer"
+#     param_str: '{"epsilon": 1e-6,"w_l": 0.5}'
+#   }
+#   loss_weight: 1
+#   include {
+#     phase: TEST
+#   }
+# }
