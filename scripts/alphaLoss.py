@@ -50,7 +50,10 @@ class AlphaMattingLossLayer(caffe.Layer):
         self.mask = np.reshape(self.mask, (-1, 1, self.shape[0], self.shape[1]))
         self.alpha = np.reshape(self.alpha, (-1, 1, self.shape[0], self.shape[1]))
         top[0].reshape(1)
-
+        self.mask[self.mask == 0.] *= 0.
+        self.mask[self.mask == 1.] *= 0.
+        self.mask[self.mask != 0.] = 1.
+        
     def forward(self, bottom, top):
         # calculate loss here
         top[0].data[...] = self.overall_loss(
@@ -64,7 +67,7 @@ class AlphaMattingLossLayer(caffe.Layer):
 
     def backward(self, top, progagate_down, bottom):
         # pass gradient back
-        print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~BackProp~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+        #print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~BackProp~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         bottom[0].diff[...] = self.computeGradient(
                                                    self.pred,
                                                    self.mask,
@@ -83,8 +86,6 @@ class AlphaMattingLossLayer(caffe.Layer):
 
     def compositional_loss(self, pred, mask, color_img, fg, bg):
         # calculate compositional_loss here
-        mask = np.reshape(mask, (-1, 1, self.shape[0], self.shape[1]))
-        pred = np.reshape(pred, (-1, 1, self.shape[0], self.shape[1]))
         self.color_pred = pred * fg + (1.0 - pred) * bg      # element-wise multiply to get color image
         diff = (self.color_pred - color_img) * mask          # 3 channels      
         num_pixels = np.sum(mask)
@@ -96,9 +97,6 @@ class AlphaMattingLossLayer(caffe.Layer):
 
     def overall_loss(self, pred, mask, alpha, color_img, fg, bg):                
         # average the above two losses
-        mask[mask == 0.] *= 0.
-        mask[mask == 1.] *= 0.
-        mask[mask != 0.] = 1.                                # extract mask area
         alpha_loss = self.alpha_prediction_loss(mask, pred, alpha)
         comp_loss = self.compositional_loss(pred, mask, color_img, fg, bg)
         return self.w_l * alpha_loss + \
@@ -118,7 +116,5 @@ class AlphaMattingLossLayer(caffe.Layer):
         comp_gradient_ = np.reshape(comp_gradient_, (-1, 1, self.shape[0], self.shape[1]))
 
         overall_gradient_ = self.w_l * alpha_gradient_ + \
-                         (1 - self.w_l) * comp_gradient_    # over gradient along pixel
-        print overall_gradient_
-        return overall_gradient_
-          
+                                 (1 - self.w_l) * comp_gradient_
+        return overall_gradient_  
