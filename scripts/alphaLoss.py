@@ -1,99 +1,80 @@
 import caffe
 import numpy as np
-import glog
+import pdb
 
 class AlphaMattingLossLayer(caffe.Layer):
     """
-    Add Root Square Loss Layer.
-
-    Use like this:
-
-    layer {
-        name: "xxx"
-        type: "Python"
-        bottom: "pred"
-        bottom: "label"
-        top: "loss"
-        include {
-            phase: train/test
-        }
-        python_param {
-            module: "rootSquareLoss"
-            layer: "RootSquareLossLayer"
-            param_str: "xxx"
-        }
-    }
+    Loss used in the first state of alpha matting.
+    It is a combine of alpha-loss and compositional-loss.
     """
-    # Check the input blob, it should have two input and the dimension should align
+
     def setup(self, bottom, top):
+        # check input pair
         if len(bottom) != 2:
-            raise Exception(
-                "Wrong number of bottom blobs \
-                (prediction and ground truth)")
-        # if bottom[0].data.ndim != bottom[1].data.ndim:
-        #     raise Exception("Prediction's dimension does not align with the label")
+            raise Exception("Need two inputs to compute distance.")
         params = eval(self.param_str)
-        self.epsilon = params["epsilon"]
         self.w_l = params["w_l"]
+        self.epsilon = params["epsilon"]
         self.shape = bottom[0].data[0][0].shape
-        glog.info('loss layer setup done.')
 
     def reshape(self, bottom, top):
+        # reshape the inter-mediate data from the blobs here.
         self.diff = np.zeros_like(bottom[0].data, dtype=np.float32)
+        # loss output is scalar
         top[0].reshape(1)
+        # reshape the data
+        self.pred = bottom[0].data[:,0,:,:]
+        self.mask = bottom[1].data[:,0,:,:]
+        self.color_img = bottom[1].data[:,1:4,:,:]
+        self.alpha = bottom[1].data[:,4,:,:]
+        self.fg = bottom[1].data[:,5:8,:,:]
+        self.bg = bottom[1].data[:,8:11,:,:]
+        self.pred = np.reshape(self.pred, (-1, 1, self.shape[0], self.shape[1]))
+        self.mask = np.reshape(self.mask, (-1, 1, self.shape[0], self.shape[1]))
+        self.alpha = np.reshape(self.alpha, (-1, 1, self.shape[0], self.shape[1]))
+        self.mask[self.mask == 0.] *= 0.
+        self.mask[self.mask == 1.] *= 0.
+        self.mask[self.mask != 0.] = 1.
+        self.num_pixels = np.sum(self.mask)
 
     def forward(self, bottom, top):
-        # calculate loss here
-        pred = bottom[0].data[:, 0, :, :]
-        mask = bottom[1].data[:, 0, :, :]
-        color_img = bottom[1].data[:, 1:4, :, :]
-        alpha = bottom[1].data[:, 4, :, :]
-        fg = bottom[1].data[:, 5:8, :, :]
-        bg = bottom[1].data[:, 8:11, :, :]
-        top[0].data[...] = self.overall_loss(pred, mask, alpha, color_img, fg, bg)
-        pred = np.reshape(pred, (-1, 1, self.shape[0], self.shape[1]))
-        alpha = np.reshape(alpha, (-1, 1, self.shape[0], self.shape[1]))
-        self.diff[...] = pred - alpha
+        top[0].data[...] = self.overall_loss(self.pred)
 
-    def backward(self, top, progagate_down, bottom):
-        # calculate backpropogation gradient here.
-        #for i in range(2):
-        #    if not progagate_down[i]:
-        #        continue
-        #    if i == 0:
-        #        sign = 1
-        #    else:
-        #        sign = -1
-        #    bottom[i].diff[...] = sign * self.diff \
-        #                            / top[0].data \
-                                    # / bottom[i].num
-        for i in range(len(bottom[0].data)):
-            bottom[0].diff[i][0] = np.dot(self.diff[i][0] / top[0].data, bottom[0].data[i][0])
-        #bottom[0].diff[...] = (self.diff / top[0].data) * bottom[0].data 
-       
-    def alpha_prediction_loss(self, mask, pred, alpha):
+    def backward(self, top, propagate_down, bottom):
+        self.diff = self.w_l * self.diff_alpha_ + (1-self.w_l) * self.diff_comp_
+        for i in range(2):
+            if not propagate_down[i]:
+                continue
+            if i == 0:
+                sign = 1
+            else:
+                sign = -1
+            
+            bottom[0].diff[...] = sign * self.diff / len(self.pred)
+
+    def alpha_prediction_loss(self, pred):
         # calculate alpha_prediction_loss here
-        diff = pred - alpha
-        diff = diff * mask       # element-wise multiply
-        num_pixels = np.sum(mask)
-        return np.sum(np.sqrt(np.square(diff) + self.epsilon**2)) \
-        / (num_pixels + self.epsilon)
-        #/ len(pred) # divid the batch size and the unknown region
+        diff = (pred - self.alpha) * self.mask                         # 4*224*224
+        self.diff_alpha_ = pred - self.alpha          
+        return np.sum(diff**2) / \
+                (self.num_pixels + self.epsilon) / 2.
 
-    def compositional_loss(self, pred, mask, color_img, fg, bg):
+    def compositional_loss(self, pred):
         # calculate compositional_loss here
-        mask = np.reshape(mask, (-1, 1, self.shape[0], self.shape[1]))
-        pred = np.reshape(pred, (-1, 1, self.shape[0], self.shape[1]))
-        color_pred = pred * fg + (1.0 - pred) * bg    # element-wise multiply to get color image
-        diff = color_pred - color_img
-        diff = diff * mask
-        num_pixels = np.sum(mask)
-        return np.sum(np.sqrt(np.square(diff) + self.epsilon**2)) \
-        / (num_pixels + self.epsilon)
-        #/ len(pred) # divide the batch size and the unknown region
+        self.color_pred = pred * self.fg + (1.0 - pred) * self.bg      # element-wise multiply to get color image
+        diff = (self.color_pred - self.color_img) * self.mask          # 3 channels
+        self.diff_comp_ = np.average(
+            (self.color_pred-self.color_img) * (self.fg-self.bg), \
+            axis=1)
+        self.diff_comp_ = np.reshape(self.diff_comp_, (-1, 1, self.shape[0], self.shape[1]))   
+        diff = np.average(diff, axis=1)                      # average over color channel
+        return np.sum(diff**2) / \
+                (self.num_pixels + self.epsilon) / 2.
 
-    def overall_loss(self, pred, mask, alpha, color_img, fg, bg):
+
+    def overall_loss(self, pred):                
         # average the above two losses
-        return self.w_l * self.alpha_prediction_loss(mask, pred, alpha) + \
-                (1 - self.w_l) * self.compositional_loss(pred, mask, color_img, fg, bg)
-        
+        alpha_loss = self.alpha_prediction_loss(pred)
+        comp_loss = self.compositional_loss(pred)
+        return self.w_l * alpha_loss + \
+                (1 - self.w_l) * comp_loss
