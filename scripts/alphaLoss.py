@@ -54,18 +54,17 @@ class AlphaMattingLossLayer(caffe.Layer):
 
     def alpha_prediction_loss(self, pred):
         # calculate alpha_prediction_loss here
-        diff = (pred - self.alpha) * self.mask                         # 4*224*224
-        self.diff_alpha_ = pred - self.alpha          
+        self.diff_alpha_ = diff = (pred - self.alpha) * self.mask                         # 4*224*224
+        # self.diff_alpha_ = pred - self.alpha          
         return np.sum(diff**2) / \
                 (self.num_pixels + self.epsilon) / 2.
 
     def compositional_loss(self, pred):
         # calculate compositional_loss here
         self.color_pred = pred * self.fg + (1.0 - pred) * self.bg      # element-wise multiply to get color image
-        diff = (self.color_pred - self.color_img) * self.mask          # 3 channels
+        self.diff_comp_ = diff = (self.color_pred - self.color_img) * self.mask          # 3 channels
         self.diff_comp_ = np.average(
-            (self.color_pred-self.color_img) * (self.fg-self.bg), \
-            axis=1)
+            self.diff_comp_ * (self.fg-self.bg), axis=1)
         self.diff_comp_ = np.reshape(self.diff_comp_, (-1, 1, self.shape[0], self.shape[1]))   
         diff = np.average(diff, axis=1)                      # average over color channel
         return np.sum(diff**2) / \
