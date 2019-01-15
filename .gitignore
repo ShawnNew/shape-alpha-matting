@@ -5,3 +5,4 @@ dataset
 *.swp
 log
 *snapshots/
+*examples/
