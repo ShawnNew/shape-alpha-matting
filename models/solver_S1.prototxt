@@ -10,5 +10,5 @@ max_iter: 450000
 momentum: 0.9
 weight_decay: 0.0005
 snapshot: 10000
-snapshot_prefix: "/home/dl/Codes/shape-alpha-matting/models/snapshots/20190113/Training"
+snapshot_prefix: "/home/dl/Codes/shape-alpha-matting/models/snapshots/20190115/Training"
 solver_mode: GPU
