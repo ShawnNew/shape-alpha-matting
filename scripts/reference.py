@@ -58,7 +58,7 @@ net.blobs['tri-map'].reshape(1, 1, NN_SIZE, NN_SIZE)
 net.blobs['data'].data[...] = image
 net.blobs['tri-map'].data[...] = tri_map
 net.forward()
-result = net.blobs['refine_output'].data * 255
+result = net.blobs['alpha_output'].data * 255
 result = np.reshape(result, (NN_SIZE, NN_SIZE)).astype(np.uint8)
 result = cv.resize(result, (img_shape[1], img_shape[0]), interpolation=cv.INTER_CUBIC)
 result_img_ = Image.fromarray(result)

@@ -1,35 +1,21 @@
-name: "ShapeDeepMattingNet_S2"
+name: "ShapeDeepMattingNet_S2_Deploy"
 
 # --------------------------- Encoder Network --------------------
 # Input data is four or more channel, because add tri-map and other
 # information.
 layer {
-  type: "HDF5Data"
+  name: "image"
+  type: "Input"
   top: "data"
+  input_param {shape: {dim: 1 dim: 3 dim: 224 dim: 224}}
+}
+layer {
+  name: "trimap"
+  type: "Input"
   top: "tri-map"
-  top: "gt"
-  hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
-    batch_size: 32
-  }
-  include {
-    phase: TRAIN
-  }
+  input_param {shape: {dim: 1 dim: 1 dim: 224 dim: 224}}
 }
 
-layer {
-  type: "HDF5Data"
-  top: "data"
-  top: "tri-map"
-  top: "gt"
-  hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/test.txt"
-    batch_size: 10
-  }
-  include {
-    phase: TEST
-  }
-}
 # Add concat layer to concat tri-map and raw images.
 layer {
   name: "concat_train"
@@ -903,65 +889,11 @@ layer {
   type: "Sigmoid"
 }
 
-# ----------------------- loss ----------------------
-# concat a y_true blob for refine
 layer {
-  name: "concat_y_true"
-  type: "Concat"
-  bottom: "tri-map"
-  bottom: "gt"
-  top: "y_true"
-  concat_param {
-    axis: 1
-  }
-}
-layer {
-  name: "alpha_prediction_loss"
-  type: "Python"
-  top: "alpha_prediction_loss"
+  name: "skip_model"
   bottom: "refine_output"
-  bottom: "y_true"
-  python_param {
-    module: "alphaPredictionLoss"
-    layer: "AlphaPredictionLossLayer"
-    param_str: '{"epsilon": 1e-6}'
-  }
-  loss_weight: 1
+  bottom: "sigmoid_pred"
+  top: "alpha_output"
+  type: "Eltwise"
+  eltwise_param {operation:SUM}
 }
-layer {
-  name: "accuracy"
-  type: "Python"
-  top: "accuracy"
-  bottom: "refine_output"
-  bottom: "y_true"
-  python_param {
-    module: "alphaPredictionLoss"
-    layer: "AlphaPredictionLossLayer"
-    param_str: '{"epsilon": 1e-6}'
-  }
-  loss_weight: 1
-  include {
-    phase: TEST
-  }
-}
-
-#layer {
-#  name: "alpha_prediction_loss"
-#  type: "EuclideanLoss"
-#  bottom: "refine_output"
-#  bottom: "gt"
-#  top: "refine_loss"
-#  loss_weight: 1
-#}
-
-#layer {
-#  name: "accuracy"
-#  type: "EuclideanLoss"
-#  bottom: "refine_output"
-#  bottom: "gt"
-#  top: "accuracy"
-#  loss_weight: 1
-#  include {
-#    phase: TEST
-#  }
-#}
