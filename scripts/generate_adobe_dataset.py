@@ -1,6 +1,7 @@
 import os, glob
 import pdb
 import numpy as np
+from utils import getFileList
 
 
 DATASET_DIR = "/home/dl/Downloads/datasets/adobe"
@@ -9,27 +10,7 @@ train_prop = 70
 val_prop = 15
 test_prop = 15
 
-def getFileList(base, sub):
-    """
-    Get file list of a directory:
-        Param:
-            base: base directory
-            sub: sub-directory name
-        Return:
-            a list of image file name
-    """
-    path = os.path.join(base, sub)
-    files = os.listdir(path)
-    fileList = []
-    for f in files:
-        if (os.path.isfile(path + '/' + f)):
-            path_ = './' + sub
-            path_ = os.path.join(path_, f)
-            # add image file into list
-            fileList.append(path_)
-    return fileList
-
-def writeFile(fn, perm):
+def writeDataSetFile(fn, perm):
     with open(fn, 'w') as f:
         for i in perm:
             line_ = trimap_list[i] + ' '  \
@@ -76,8 +57,8 @@ if __name__ == '__main__':
 	train_path = os.path.join(DATASET_DIR, 'train.txt')
 	val_path = os.path.join(DATASET_DIR, 'val.txt')
 	test_path = os.path.join(DATASET_DIR, 'test.txt')
-        writeFile('train.txt', train_perm_)
-        writeFile('val.txt', val_perm_)
-        writeFile('test.txt', test_perm_)
+    writeDataSetFile(train_path, train_perm_)
+    writeDataSetFile(val_path, val_perm_)
+    writeDataSetFile(test_path, test_perm_)
 
     
