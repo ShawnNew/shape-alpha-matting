@@ -1,4 +1,4 @@
-name: "ShapeDeepMattingNet_S2_Deploy"
+name: "ShapeDeepMattingNet_Deploy"
 
 # --------------------------- Encoder Network --------------------
 # Input data is four or more channel, because add tri-map and other
@@ -813,7 +813,6 @@ layer {
     num_output: 64
     pad: 1
     kernel_size: 3
-    group: 2
   }
 }
 layer {
@@ -846,7 +845,6 @@ layer {
     num_output: 64
     pad: 1
     kernel_size: 3
-    group: 2
   }
 }
 layer {
