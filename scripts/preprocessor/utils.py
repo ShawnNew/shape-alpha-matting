@@ -76,3 +76,14 @@ def greyscaleTransform(img):
     """
     return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
+
+def unknownRegion(trimap):
+    '''
+    :param trimap: trimap pic
+    :return: an index for unknown region
+    '''
+    index = np.where(trimap == 128)
+    i = random.choice([j for j in range(len(index[0]))])
+    return np.array(index)[:, i][:2]
+
+def imgCropper(imgs, trimap, crop_size, flip_flag, output_size):
