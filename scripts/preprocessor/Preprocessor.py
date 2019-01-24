@@ -16,55 +16,51 @@ class Preprocessor:
         self.root_dir_ = root
         self.output_dir_ = output
         self.img_size_ = size
-    
-    def getSplitedDatasetList(self):
-        """Parse the text file in the root of the dataset,
-        which contains train, test, validation split .txt files.
-        
-        In each txt file, there are samples organized as rows.
-        """
-        list_ = []
-        for file in os.listdir(self.root_dir_):
-            if file.endswith(".txt"):
-                split_dir_ = os.path.join(self.root_dir_, file)
-                list_.append(split_dir_)
-        self.dataset_split_list_ = list_
 
-    
-    def splitDataset(self, \
-                    prop_train=0.7, \
-                    prop_test=0.15, \
-                    prop_val=0.15, \
-                    shuffle=True):
-        def writeDataSetFile(fn, perm):
-            with open(fn, 'w') as f:
-                for i in perm:
-                    line_ = trimap_list[i] + ' '  \
-                            + original_list[i] + ' ' \
-                            + gt_list[i] + ' ' \
-                            + fg_list[i] + ' ' \
-                            + bg_list[i] + '\n'
-                    f.write(line_)
+    def parseDatasetDirectory(self):
         for item in os.listdir(self.root_dir_):
             _path = os.path.join(self.root_dir_, item)
             if (os.path.isdir(_path)):
                 if item == 'TrimapImages':
-                    trimap_list = getFileList(self.root_dir_, item)
+                    self.trimap_list = getFileList(self.root_dir_, item)
                 elif item == 'AlphaMatte':
-                    gt_list = getFileList(self.root_dir_, item)
+                    self.gt_list = getFileList(self.root_dir_, item)
                 elif item == 'Foreground':
-                    fg_list = getFileList(self.root_dir_, item)
+                    self.fg_list = getFileList(self.root_dir_, item)
                 elif item == 'OriginalImages':
-                    original_list = getFileList(self.root_dir_, item)
+                    self.original_list = getFileList(self.root_dir_, item)
                 elif item == 'Background':
-                    bg_list = getFileList(self.root_dir_, item)
-        # check
-        if not (len(trimap_list) == len(original_list) \
-                == len(gt_list) == len(fg_list) \
-                == len(fg_list) == len(bg_list)):
+                    self.bg_list = getFileList(self.root_dir_, item)
+        # TODO: different method to check
+        if not (len(self.trimap_list) == len(self.original_list) \
+                == len(self.gt_list) == len(self.fg_list) \
+                == len(self.fg_list) == len(self.bg_list)):
             raise Exception("Number of images is not same.")
+
+
+
+    def getSplitedDataset(self, \
+                    prop_train=0.7, \
+                    prop_test=0.15, \
+                    prop_val=0.15, \
+                    shuffle=True):
+        """
+        Parse the text file in the root of the dataset,
+        which contains train, test, validation split .txt files.
+        
+        In each txt file, there are samples organized as rows.
+        """
+        def writeDataSetFile(fn, perm):
+            with open(fn, 'w') as f:
+                for i in perm:
+                    line_ = self.trimap_list[i] + ' '  \
+                            + self.original_list[i] + ' ' \
+                            + self.gt_list[i] + ' ' \
+                            + self.fg_list[i] + ' ' \
+                            + self.bg_list[i] + '\n'
+                    f.write(line_)
         if shuffle:
-            perm = np.random.permutation(len(trimap_list))
+            perm = np.random.permutation(len(self.trimap_list))
             len_ = len(perm)
             train_perm_ = perm[0: len_ * prop_train]
             val_perm_ = perm[len_ * prop_train: \
@@ -76,7 +72,12 @@ class Preprocessor:
         writeDataSetFile(train_path, train_perm_)
         writeDataSetFile(val_path, val_perm_)
         writeDataSetFile(test_path, test_perm_)
-        self.getSplitedDatasetList() # return dataset file lists.
+        list_ = []
+        for file in os.listdir(self.root_dir_):
+            if file.endswith(".txt"):
+                split_dir_ = os.path.join(self.root_dir_, file)
+                list_.append(split_dir_)
+        self.dataset_split_list_ = list_
 
     
     def writeHDF5Files(self):

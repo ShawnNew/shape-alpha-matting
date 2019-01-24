@@ -2,6 +2,7 @@ import os
 import h5py
 import cv2
 import numpy as np
+import random
 
 def writeH5Files(out_dir, data, tri_map, gt, fg, bg, file):
     """
@@ -86,4 +87,3 @@ def unknownRegion(trimap):
     i = random.choice([j for j in range(len(index[0]))])
     return np.array(index)[:, i][:2]
 
-def imgCropper(imgs, trimap, crop_size, flip_flag, output_size):
