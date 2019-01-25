@@ -9,18 +9,17 @@ from utils import *
 
 class Preprocessor:
     # class member
-    samples_ = 256
-    ele_ = 5    # trimap, foreground, background, gt, original
     channels = 11 # the total channel number of the dataset
     random_crop_list_ = [320, 480, 640]
     flip_list_ = [True, False]
     
     
     # class constructor
-    def __init__(self, root, output, size):
+    def __init__(self, root, output, size, samples_per_file):
         self.root_dir_ = root
         self.output_dir_ = output
         self.img_size_ = size
+        self.samples_ = samples_per_file
 
     def parseDatasetDirectory(self):
         """
@@ -34,6 +33,7 @@ class Preprocessor:
                 _dict[item] = getFileList(self.root_dir_, item)  # relative path against root
         
         self.dataset_dict = _dict
+        self.ele_ = len(_dict.keys())
 
 
     def getSplitedDataset(self, \
@@ -138,7 +138,6 @@ class Preprocessor:
         
 
     def imgCropper(self, img, trimap, output_size):
-        #TODO: write crop function.
         random_cropsize = random.choice(self.random_crop_list_)
         original_shape = trimap.shape
         # resize if the original image is not large enough
