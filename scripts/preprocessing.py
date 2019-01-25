@@ -27,6 +27,7 @@ if __name__ == '__main__':
     # SAMPLES = 256                 # samples each hdf5 file
     
     preprocessor = Preprocessor(dataset_root, output_dir, img_size)
-    preprocessor.splitDataset(prop_train=0.7, \
+    preprocessor.parseDatasetDirectory()
+    preprocessor.getSplitedDataset(prop_train=0.7, \
                             prop_test=0.15, prop_val=0.15, shuffle=True)
     preprocessor.writeHDF5Files()
