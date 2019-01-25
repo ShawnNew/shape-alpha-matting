@@ -3,24 +3,17 @@ import h5py
 import cv2
 import numpy as np
 import random
+from scipy import misc as misc
+import math
 
-def writeH5Files(out_dir, data, tri_map, gt, fg, bg, file):
+def writeH5Files(out_dir, samples_array, file):
     """
-    Write the formatted data into hdf5 file
+    Write the formatted data into hdf5 file from img_array
     """
-    # h5_filedir = os.path.join(out_dir, h5_filename)
     hdf_file = h5py.File(file, 'w')
-    data_shape = data[0].shape
-    greyscale_shape = tri_map[0].shape
-    chunks_data = (1, data_shape[0], data_shape[1], data_shape[2])
-    chunks_greyscale = ( 1, greyscale_shape[0], \
-                        greyscale_shape[1],
-                        greyscale_shape[2])
-    hdf_file.create_dataset('data', dtype=np.float, data=data, chunks=chunks_data)
-    hdf_file.create_dataset('tri-map', dtype=np.float, data=tri_map, chunks=chunks_greyscale)
-    hdf_file.create_dataset('gt', dtype=np.float, data=gt, chunks=chunks_greyscale)
-    hdf_file.create_dataset('fg', dtype=np.float, data=fg, chunks=chunks_data)
-    hdf_file.create_dataset('bg', dtype=np.float, data=bg, chunks=chunks_data)
+    shape = samples_array[0].shape
+    chunks_data = (1, shape[0], shape[1], shape[2])
+    hdf_file.create_dataset('data', dtype=np.float, data=samples_array, chunks=chunks_data)
     hdf_file.flush()
     hdf_file.close()
 
@@ -56,34 +49,54 @@ def getFileList(base, sub):
     return fileList  
 
 
-def caffeTransform(img, size):
-    """
-    Transform the data into caffe capable format.
-    """
-    img = cv2.resize(img, \
-                    (size, size),\
-                    interpolation=cv2.INTER_CUBIC
-                )
-    if len(img.shape) == 3: # 3-D image like original image
-        img = np.transpose(img, (2, 0, 1))
-    else:                   # tri-map and ground truth
-        pass
-    #TODO: normalization to be done here
-    return img / 255.
-
-def greyscaleTransform(img):
-    """
-    BGR image to greyscale image transformation.
-    """
-    return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-
-def unknownRegion(trimap):
+def candidateUnknownRegion(img):
     '''
     :param trimap: trimap pic
     :return: an index for unknown region
     '''
-    index = np.where(trimap == 128)
+    index = np.where(img == 128)
     i = random.choice([j for j in range(len(index[0]))])
     return np.array(index)[:, i][:2]
+
+def validUnknownRegion(img, output_size):
+    original_shape = np.asarray(img.shape)
+    a = b = c = d = -1
+    while not (
+        (a >= 0 and a < original_shape[0]) and \
+        (b >= 0 and b < original_shape[0]) and \
+        (c >= 0 and c < original_shape[1]) and \
+        (d >= 0 and c < original_shape[1])
+        ):   # update candidate until it's valid
+        cand = candidateUnknownRegion(img)    
+        half = int(math.ceil(output_size / 2))
+        # four coners of the image
+        a = cand[0] - half
+        b = cand[0] + half
+        c = cand[1] - half
+        d = cand[1] + half
+    return half, cand
+
+def batch_resize(img, deter_h, deter_w):
+    '''
+    :param img: The input image, should be shape like [:,:,11]
+    :param deter_h: The picture height as you wish to resize to
+    :param deter_w: The picture width as you wish to resize to
+    :return: A vector with shape [deter_h, deter_w, 11]
+    '''
+    image = np.zeros([deter_h, deter_w, 11])
+    # try:
+    image[:, :, :3] = misc.imresize(img[:, :, :3].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
+        np.float32)
+    image[:, :, 3] = misc.imresize(img[:, :, 3].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
+        np.float32)
+    image[:, :, 4] = misc.imresize(img[:, :, 4].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
+        np.float32)
+    image[:, :, 5:8] = misc.imresize(img[:, :, 5:8].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
+        np.float32)
+    image[:, :, 8:11] = misc.imresize(img[:, :, 8:11].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
+        np.float32)
+    return image
+
+
+
 
