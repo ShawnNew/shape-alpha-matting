@@ -80,7 +80,7 @@ class Preprocessor:
         self.dataset_split_list_ = list_
 
     
-    def writeHDF5Files(self):
+    def writeHDF5Files(self, scale=1):
         for file in self.dataset_split_list_:
             dataset_file_ = os.path.join(self.root_dir_, file)
             output_file_path_ = os.path.join(self.output_dir_, file.replace(".txt", ""))
@@ -118,7 +118,7 @@ class Preprocessor:
                     flip = random.choice(self.flip_list_)
                     if flip:
                         sample_array = sample_array[:, ::-1, :]
-                    data[sample_count_] = np.transpose(sample_array, (2, 0, 1))
+                    data[sample_count_] = np.transpose(sample_array, (2, 0, 1)) * scale
 
 
                     print "Processed %d samples"% int(i+1)

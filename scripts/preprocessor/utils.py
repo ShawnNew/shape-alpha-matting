@@ -19,6 +19,12 @@ def writeH5Files(out_dir, samples_array, file):
 
 
 def writeH5TxtFile(out_dir, h5dir):
+    """
+    Generate a txt file that list all the HDF5 files of the dataset.
+    Param:
+        out_dir: the output directory
+        h5dir:   the hdf5 dataset directory
+    """
     text_filename = h5dir + ".txt"
     text_filename = os.path.join(out_dir, text_filename)
     text_filespath = os.path.join(out_dir, h5dir)
@@ -31,11 +37,11 @@ def writeH5TxtFile(out_dir, h5dir):
 def getFileList(base, sub):
     """
     Get file list of a directory:
-        Param:
-            base: base directory
-            sub: sub-directory name
-        Return:
-            a list of image file name
+    Param:
+        base: base directory
+        sub: sub-directory name
+    Return:
+        a list of image file name
     """
     path = os.path.join(base, sub)
     files = os.listdir(path)
@@ -51,14 +57,25 @@ def getFileList(base, sub):
 
 def candidateUnknownRegion(img):
     '''
-    :param trimap: trimap pic
-    :return: an index for unknown region
+    Propose a condidate of unknown region center randomly within the unknown area of img.
+    param: 
+        img: trimap image
+    return: 
+        an index for unknown region
     '''
     index = np.where(img == 128)
     i = random.choice([j for j in range(len(index[0]))])
     return np.array(index)[:, i][:2]
 
 def validUnknownRegion(img, output_size):
+    """
+    Check wether the candidate unknown region is valid and return the index.
+    param:
+        img:            trimap image
+        output_size:    the desired output image size
+    return:
+        output the half-size of the output size and the index of unknown region.
+    """
     original_shape = np.asarray(img.shape)
     a = b = c = d = -1
     while not (
