@@ -103,15 +103,15 @@ def batch_resize(img, deter_h, deter_w):
     image = np.zeros([deter_h, deter_w, 11])
     # try:
     image[:, :, :3] = misc.imresize(img[:, :, :3].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
-        np.float32)
+        np.float64)
     image[:, :, 3] = misc.imresize(img[:, :, 3].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
-        np.float32)
+        np.float64)
     image[:, :, 4] = misc.imresize(img[:, :, 4].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
-        np.float32)
+        np.float64)
     image[:, :, 5:8] = misc.imresize(img[:, :, 5:8].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
-        np.float32)
+        np.float64)
     image[:, :, 8:11] = misc.imresize(img[:, :, 8:11].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
-        np.float32)
+        np.float64)
     return image
 
 

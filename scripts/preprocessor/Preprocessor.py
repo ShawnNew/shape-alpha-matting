@@ -6,7 +6,6 @@ from PIL import Image
 import sys
 from utils import *
 
-
 class Preprocessor:
     # class member
     channels = 11 # the total channel number of the dataset
@@ -50,9 +49,11 @@ class Preprocessor:
                     for item in list_:
                         # f.write(dict_.values)
                         for key in dict_.keys():
-                            path, filename = os.path.split(dict_[key][0])
-                            path = os.path.join(path, item)
-                            f.write(path + ' ')
+                            temp_path = './' + \
+                                        key + \
+                                        '/' + \
+                                        os.path.basename(item)
+                            f.write(temp_path + ' ')
                         f.write('\n')
 
         # count sample number according to the smallest folder
@@ -83,7 +84,8 @@ class Preprocessor:
     def writeHDF5Files(self, scale=1):
         for file in self.dataset_split_list_:
             dataset_file_ = os.path.join(self.root_dir_, file)
-            output_file_path_ = os.path.join(self.output_dir_, file.replace(".txt", ""))
+            output_file_path_ = os.path.join(self.output_dir_, \
+                                os.path.basename(file).replace(".txt", ""))
             print "Dataset file name is:", dataset_file_
             with open(dataset_file_, 'r') as f:
                 lines_ = f.readlines()
@@ -100,18 +102,17 @@ class Preprocessor:
                     sample_count_ = i%(self.samples_)
                     if not len(items) == self.ele_:
                         raise Exception("columns of each line is not right.")
-                    raw_tri_map_ = np.asarray(Image.open(items[0])) # 2-D as grey image
-                    raw_img_ = np.asarray(cv2.imread(items[1]))
-                    raw_gt_ = np.asarray(Image.open(items[2]))      # 2-D as grey
-                    raw_fg_ = np.asarray(cv2.imread(items[3]))
-                    raw_bg_ = np.asarray(cv2.imread(items[4]))
+                    raw_tri_map_ = np.asarray(Image.open(items[1])) # 2-D as grey image
+                    raw_img_ = np.asarray(cv2.imread(items[0]))
+                    raw_gt_ = np.asarray(Image.open(items[4]))      # 2-D as grey
+                    raw_fg_ = np.asarray(cv2.imread(items[2]))
+                    raw_bg_ = np.asarray(cv2.imread(items[3]))
 
                     sample_array = np.concatenate([raw_img_, \
                                                 np.expand_dims(raw_tri_map_, axis=2), \
                                                 np.expand_dims(raw_gt_, axis=2), \
                                                 raw_fg_, \
                                                 raw_bg_], axis=2).astype(np.float64)
-
                     sample_array = self.imgCropper(sample_array, \
                                                 np.expand_dims(raw_tri_map_, axis=2), \
                                                 self.img_size_)
