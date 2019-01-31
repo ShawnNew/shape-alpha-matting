@@ -4,11 +4,7 @@ name: "ShapeDeepMattingNet_S1"
 # information.
 layer {
   type: "HDF5Data"
-  top: "data"
-  top: "tri-map"
-  top: "gt"
-  top: "fg"
-  top: "bg"
+  top: "batch_data"
   hdf5_data_param {
     source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
     batch_size: 32
@@ -20,11 +16,7 @@ layer {
 
 layer {
   type: "HDF5Data"
-  top: "data"
-  top: "tri-map"
-  top: "gt"
-  top: "fg"
-  top: "bg"
+  top: "batch_data"
   hdf5_data_param {
     source: "/home/dl/Codes/shape-alpha-matting/dataset/test.txt"
     batch_size: 10
@@ -33,6 +25,26 @@ layer {
     phase: TEST
   }
 }
+
+# slice the batch data into train-data, gt, fg, bg
+layer {
+  name: "slice"
+  type: "Slice"
+  bottom: "batch_data"
+  top: "data"
+  top: "tri-map"
+  top: "gt"
+  top: "fg"
+  top: "bg"
+  slice_param {
+    axis: 1
+    slice_point: 3
+    slice_point: 4
+    slice_point: 5
+    slice_point: 8
+  }
+}
+
 # Add concat layer to concat tri-map and raw images.
 layer {
   name: "concat_train"
