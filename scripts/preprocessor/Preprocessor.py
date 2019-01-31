@@ -114,7 +114,6 @@ class Preprocessor:
                                                 raw_fg_, \
                                                 raw_bg_], axis=2).astype(np.float64)
                     sample_array = self.imgCropper(sample_array, \
-                                                np.expand_dims(raw_tri_map_, axis=2), \
                                                 self.img_size_)
                     flip = random.choice(self.flip_list_)
                     if flip:
@@ -138,29 +137,19 @@ class Preprocessor:
             writeH5TxtFile(self.output_dir_, file.replace(".txt", ""))
         
 
-    def imgCropper(self, img, trimap, output_size):
+    def imgCropper(self, img, output_size):
         random_cropsize = random.choice(self.random_crop_list_)
+        trimap = img[:, :, 3]
         original_shape = trimap.shape
-        # resize if the original image is not large enough
-        if(min(original_shape[0], original_shape[1])<random_cropsize):
-            if(original_shape[0] < original_shape[1]):
-                ratio = random_cropsize / original_shape[0]
-                h = int(original_shape[0]*ratio+1)
-                w = int(original_shape[1]*ratio)
-            else:
-                ratio = random_cropsize / original_shape[1]
-                h = int(original_shape[0]*ratio)
-                w = int(original_shape[1]*ratio+1)
-            img = batch_resize(img, h, w)
+      
+        if (min(original_shape[0], original_shape[1]) < random_cropsize):
+            minimal = min(original_shape[0], original_shape[1])
+            scale_ = math.ceil(float(random_cropsize) / float(minimal))
+            img = batch_resize_by_scale(img, scale_)
+            trimap = img[:, :, 3]
+        
+        h_s, h_e, w_s, w_e = validUnknownRegion(trimap, random_cropsize)
+        crop_img = img[h_s:h_e, w_s:w_e, :] # crop
 
-        half, valid_unknown_area = validUnknownRegion(trimap, random_cropsize)
-        if random_cropsize != output_size:
-            img = img[
-                valid_unknown_area[0]-half : valid_unknown_area[0]+half, \
-                valid_unknown_area[1]-half : valid_unknown_area[1]+half, :]
-            img = batch_resize(img, output_size, output_size)
-        else:
-            img = img[
-                valid_unknown_area[0]-half : valid_unknown_area[0]+half, \
-                valid_unknown_area[1]-half : valid_unknown_area[1]+half, :]
-        return img
+        return batch_resize(crop_img, output_size, output_size)
+

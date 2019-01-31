@@ -30,18 +30,18 @@ image_path = args.image
 # trimap_path = args.trimap
 # weights = args.weights
 
-model = "/home/dl/Codes/shape-alpha-matting/models/shape_alpha_matting_deploy.prototxt"
+model = "/home/dl/Codes/shape-alpha-matting/models/shapeAlphaMattingNet_deploy.prototxt"
 # pdb.set_trace()
 base_image_path = "/home/dl/Codes/shape-alpha-matting/examples/original"
 base_trimap_path = "/home/dl/Codes/shape-alpha-matting/examples/trimap"
-weights = "/home/dl/Codes/shape-alpha-matting/models/snapshots/refine/shape_alpha_matting.caffemodel"
+weights = "/home/dl/Codes/shape-alpha-matting/models/snapshots/refine/Refine_training_iter_400000.caffemodel"
 image_path = os.path.join(base_image_path, args.image)
 trimap_path = os.path.join(base_trimap_path, args.image)
 
 NN_SIZE = 224
 
 caffe.set_mode_gpu()
-caffe.set_device(1)
+caffe.set_device(2)
 
 net = caffe.Net(model, weights, caffe.TEST)
 

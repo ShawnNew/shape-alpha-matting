@@ -5,6 +5,7 @@ import numpy as np
 import random
 from scipy import misc as misc
 import math
+import pdb
 
 def writeH5Files(out_dir, samples_array, file):
     """
@@ -74,24 +75,63 @@ def validUnknownRegion(img, output_size):
         img:            trimap image
         output_size:    the desired output image size
     return:
-        output the half-size of the output size and the index of unknown region.
+        output the crop start and end index along h and w respectively.
     """
-    original_shape = np.asarray(img.shape)
-    a = b = c = d = -1
-    while not (
-        (a >= 0 and a < original_shape[0]) and \
-        (b >= 0 and b < original_shape[0]) and \
-        (c >= 0 and c < original_shape[1]) and \
-        (d >= 0 and c < original_shape[1])
-        ):   # update candidate until it's valid
-        cand = candidateUnknownRegion(img)    
-        half = int(math.ceil(output_size / 2))
-        # four coners of the image
-        a = cand[0] - half
-        b = cand[0] + half
-        c = cand[1] - half
-        d = cand[1] + half
-    return half, cand
+    h_start = h_end = w_start = w_end = 0
+    cand = candidateUnknownRegion(img)
+    shape_ = img.shape
+    if (output_size == 320):
+        h_start = max(cand[0]-159, 0)
+        w_start = max(cand[1]-159, 0)
+        if (h_start+320 > shape_[0]):
+            h_start = shape_[0] - 320
+        if (w_start+320 > shape_[1]):
+            w_start = shape_[1] - 320
+        h_end = h_start + 320
+        w_end = w_start + 320
+        return h_start, h_end, w_start, w_end
+    elif (output_size == 480):
+        h_start = max(cand[0]-239, 0)
+        w_start = max(cand[1]-239, 0)
+        if (h_start+480 > shape_[0]):
+            h_start = shape_[0] - 480
+        if (w_start+480 > shape_[1]):
+            w_start = shape_[1] - 480
+        h_end = h_start + 480
+        w_end = w_start + 480
+    elif (output_size == 640):
+        h_start = max(cand[0]-319, 0)
+        w_start = max(cand[1]-319, 0)
+        if (h_start+640 > shape_[0]):
+            h_start = shape_[0] - 640
+        if (w_start+640 > shape_[1]):
+            w_start = shape_[1] - 640
+        h_end = h_start + 640
+        w_end = w_start + 640
+    return h_start, h_end, w_start, w_end
+
+
+def batch_resize_by_scale(img, scale):
+    '''
+    :param img: The input image, should be shape like [:,:,11]
+    :param deter_h: The picture height as you wish to resize to
+    :param deter_w: The picture width as you wish to resize to
+    :return: A vector with shape [deter_h, deter_w, 11]
+    '''
+    shape_ = img.shape
+    image = np.zeros([shape_[0]*int(scale), shape_[1]*int(scale), 11])
+    # try:
+    image[:, :, :3] = misc.imresize(img[:, :, :3], scale, interp='nearest').astype(
+        np.float64)
+    image[:, :, 3] = misc.imresize(img[:, :, 3], scale, interp='nearest').astype(
+        np.float64)
+    image[:, :, 4] = misc.imresize(img[:, :, 4], scale, interp='nearest').astype(
+        np.float64)
+    image[:, :, 5:8] = misc.imresize(img[:, :, 5:8], scale, interp='nearest').astype(
+        np.float64)
+    image[:, :, 8:11] = misc.imresize(img[:, :, 8:11], scale, interp='nearest').astype(
+        np.float64)
+    return image
 
 def batch_resize(img, deter_h, deter_w):
     '''
@@ -113,7 +153,6 @@ def batch_resize(img, deter_h, deter_w):
     image[:, :, 8:11] = misc.imresize(img[:, :, 8:11].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
         np.float64)
     return image
-
 
 
 

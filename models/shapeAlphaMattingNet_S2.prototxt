@@ -954,18 +954,18 @@ layer {
 
 #layer {
 #  name: "alpha_prediction_loss"
-#  type: "EuclideanLoss"
-#  bottom: "refine_output"
-#  bottom: "gt"
+#  type: "AlphaPredictionLoss"
+#  bottom: "skip_output"
+#  bottom: "y_true"
 #  top: "refine_loss"
 #  loss_weight: 1
 #}
 
 #layer {
 #  name: "accuracy"
-#  type: "EuclideanLoss"
-#  bottom: "refine_output"
-#  bottom: "gt"
+#  type: "AlphaPredictionLoss"
+#  bottom: "skip_output"
+#  bottom: "y_true"
 #  top: "accuracy"
 #  loss_weight: 1
 #  include {
