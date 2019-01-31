@@ -7,11 +7,13 @@ from scipy import misc as misc
 import math
 import pdb
 
-def writeH5Files(out_dir, samples_array, file):
+def writeH5Files(samples_array, file_path):
     """
     Write the formatted data into hdf5 file from img_array
     """
-    hdf_file = h5py.File(file, 'w')
+    dir_, _ = os.path.split(file_path)
+    if not os.path.exists(dir_): os.mkdir(dir_)
+    hdf_file = h5py.File(file_path, 'w')
     shape = samples_array[0].shape
     chunks_data = (1, shape[0], shape[1], shape[2])
     hdf_file.create_dataset('data', dtype=np.float, data=samples_array, chunks=chunks_data)
@@ -19,21 +21,24 @@ def writeH5Files(out_dir, samples_array, file):
     hdf_file.close()
 
 
-def writeH5TxtFile(out_dir, h5dir):
+def writeH5TxtFile(_dir):
     """
     Generate a txt file that list all the HDF5 files of the dataset.
     Param:
         out_dir: the output directory
         h5dir:   the hdf5 dataset directory
     """
-    text_filename = h5dir + ".txt"
-    text_filename = os.path.join(out_dir, text_filename)
-    text_filespath = os.path.join(out_dir, h5dir)
-    files = os.listdir(text_filespath)
-    with open(text_filename, 'w') as f:
-        for file in files:
-            line_ = text_filespath + '/' + file + '\n'
-            f.write(line_)
+    for file_ in os.listdir(_dir):
+        if os.path.isdir(file_):
+            txt_filename = file_ + ".txt"
+            txt_path = os.path.join(_dir, txt_filename)
+            with open(txt_path, 'w') as f:
+                sub_dir = os.path.join(_dir, file_)
+                for i in os.listdir(sub_dir):
+                    if i.endswith(".h5"):
+                        line_ = sub_dir + "/" + i + "\n"
+                        f.write(line_)
+
 
 def getFileList(base, sub):
     """

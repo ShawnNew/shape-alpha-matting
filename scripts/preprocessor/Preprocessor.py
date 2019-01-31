@@ -5,6 +5,7 @@ import numpy as np
 from PIL import Image
 import sys
 from utils import *
+import pdb
 
 class Preprocessor:
     # class member
@@ -124,17 +125,19 @@ class Preprocessor:
                     print "Processed %d samples"% int(i+1)
                     if sample_count_+1 == self.samples_: # write SAMPLES images into hdf5 file
                         file_count += 1
-                        filename = file.replace(".txt", "") + str(file_count) + ".h5"
+                        filename = os.path.basename(file).replace(".txt", "")
+                        filename += str(file_count) + ".h5"
                         filepath = os.path.join(output_file_path_, filename)
                         print "Writing file:", filepath
-                        writeH5Files(self.output_dir_, data, filepath)
-                filename = file.replace(".txt", "") + str(file_count+1) +  ".h5"
+                        writeH5Files(data, filepath)
+                filename = os.path.basename(file).replace(".txt", "")
+                filename += str(file_count+1) +  ".h5"
                 filepath = os.path.join(output_file_path_, filename)
                 print "Writing file:", filepath
-                writeH5Files(self.output_dir_, data, filepath)
+                writeH5Files(data, filepath)
                 print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-            # write hdf5 files list into txt file, which will be used in caffe data layer
-            writeH5TxtFile(self.output_dir_, file.replace(".txt", ""))
+        # write hdf5 files list into txt file, which will be used in caffe data layer
+        writeH5TxtFile(self.output_dir_)
         
 
     def imgCropper(self, img, output_size):
