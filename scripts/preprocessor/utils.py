@@ -29,14 +29,16 @@ def writeH5TxtFile(_dir):
         h5dir:   the hdf5 dataset directory
     """
     for file_ in os.listdir(_dir):
-        if os.path.isdir(file_):
+        if os.path.isdir(os.path.join(_dir, file_)):
             txt_filename = file_ + ".txt"
             txt_path = os.path.join(_dir, txt_filename)
             with open(txt_path, 'w') as f:
                 sub_dir = os.path.join(_dir, file_)
                 for i in os.listdir(sub_dir):
                     if i.endswith(".h5"):
-                        line_ = sub_dir + "/" + i + "\n"
+                        path = os.path.abspath(sub_dir)
+                        path = os.path.join(path, i)
+                        line_ = path + "\n"
                         f.write(line_)
 
 
