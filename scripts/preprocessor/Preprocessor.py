@@ -160,11 +160,11 @@ class Preprocessor:
         if (min(original_shape[0], original_shape[1]) < random_cropsize):
             minimal = min(original_shape[0], original_shape[1])
             scale_ = math.ceil(float(random_cropsize) / float(minimal))
-            img = batch_resize_by_scale(img, scale_)
+            img = batch_resize_by_scale(img, scale_, self.channels)
             trimap = img[:, :, 3]
         
         h_s, h_e, w_s, w_e = validUnknownRegion(trimap, random_cropsize)
         crop_img = img[h_s:h_e, w_s:w_e, :] # crop
 
-        return batch_resize(crop_img, output_size, output_size)
+        return batch_resize(crop_img, output_size, output_size, self.channels)
 
