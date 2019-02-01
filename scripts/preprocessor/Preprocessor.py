@@ -9,7 +9,7 @@ import pdb
 
 class Preprocessor:
     # class member
-    channels = 11 # the total channel number of the dataset
+    channels = 13 # the total channel number of the dataset
     random_crop_list_ = [320, 480, 640]
     flip_list_ = [True, False]
     
@@ -104,13 +104,17 @@ class Preprocessor:
                     if not len(items) == self.ele_:
                         raise Exception("columns of each line is not right.")
                     raw_tri_map_ = np.asarray(Image.open(items[1])) # 2-D as grey image
-                    raw_img_ = np.asarray(cv2.imread(items[0]))
+                    raw_img_ = np.asarray(cv2.imread(items[6]))
                     raw_gt_ = np.asarray(Image.open(items[4]))      # 2-D as grey
-                    raw_fg_ = np.asarray(cv2.imread(items[2]))
-                    raw_bg_ = np.asarray(cv2.imread(items[3]))
+                    raw_fg_ = np.asarray(cv2.imread(items[0]))
+                    raw_bg_ = np.asarray(cv2.imread(items[5]))
+                    raw_gradient_ = np.asarray(Image.open(items[2]))
+                    raw_roughness_ = np.asarray(Image.open(items[3]))
 
                     sample_array = np.concatenate([raw_img_, \
                                                 np.expand_dims(raw_tri_map_, axis=2), \
+                                                np.expand_dims(raw_gradient_, axis=2), \
+                                                np.expand_dims(raw_roughness_, axis=2), \
                                                 np.expand_dims(raw_gt_, axis=2), \
                                                 raw_fg_, \
                                                 raw_bg_], axis=2).astype(np.float64)

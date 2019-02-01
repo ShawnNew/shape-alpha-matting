@@ -4,10 +4,10 @@ name: "ShapeDeepMattingNet_S1"
 # information.
 layer {
   type: "HDF5Data"
-  top: "batch_data"
+  top: "data"
   hdf5_data_param {
     source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
-    batch_size: 32
+    batch_size: 1
   }
   include {
     phase: TRAIN
@@ -16,10 +16,10 @@ layer {
 
 layer {
   type: "HDF5Data"
-  top: "batch_data"
+  top: "data"
   hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/test.txt"
-    batch_size: 10
+    source: "/home/dl/Codes/shape-alpha-matting/dataset/train.txt"
+    batch_size: 1
   }
   include {
     phase: TEST
@@ -30,8 +30,8 @@ layer {
 layer {
   name: "slice"
   type: "Slice"
-  bottom: "batch_data"
-  top: "data"
+  bottom: "data"
+  top: "data_"
   top: "tri-map"
   top: "gt"
   top: "fg"
@@ -49,7 +49,7 @@ layer {
 layer {
   name: "concat_train"
   bottom: "tri-map"
-  bottom: "data"
+  bottom: "data_"
   top: "train_data"
   type: "Concat"
   concat_param {

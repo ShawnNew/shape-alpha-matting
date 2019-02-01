@@ -16,7 +16,7 @@ def writeH5Files(samples_array, file_path):
     hdf_file = h5py.File(file_path, 'w')
     shape = samples_array[0].shape
     chunks_data = (1, shape[0], shape[1], shape[2])
-    hdf_file.create_dataset('data', dtype=np.float, data=samples_array, chunks=chunks_data)
+    hdf_file.create_dataset('dataset', dtype=np.float, data=samples_array, chunks=chunks_data)
     hdf_file.flush()
     hdf_file.close()
 
@@ -124,7 +124,7 @@ def batch_resize_by_scale(img, scale):
     :return: A vector with shape [deter_h, deter_w, 11]
     '''
     shape_ = img.shape
-    image = np.zeros([shape_[0]*int(scale), shape_[1]*int(scale), 11])
+    image = np.zeros([shape_[0]*int(scale), shape_[1]*int(scale), 13])
     # try:
     image[:, :, :3] = misc.imresize(img[:, :, :3], scale, interp='nearest').astype(
         np.float64)
@@ -136,6 +136,8 @@ def batch_resize_by_scale(img, scale):
         np.float64)
     image[:, :, 8:11] = misc.imresize(img[:, :, 8:11], scale, interp='nearest').astype(
         np.float64)
+    image[:, :, 11] = misc.imresize(img[:, :, 11], scale, interp='nearest').astype(np.float64)
+    image[:, :, 12] = misc.imresize(img[:, :, 12], scale, interp='nearest').astype(np.float64)
     return image
 
 def batch_resize(img, deter_h, deter_w):
@@ -145,7 +147,7 @@ def batch_resize(img, deter_h, deter_w):
     :param deter_w: The picture width as you wish to resize to
     :return: A vector with shape [deter_h, deter_w, 11]
     '''
-    image = np.zeros([deter_h, deter_w, 11])
+    image = np.zeros([deter_h, deter_w, 13])
     # try:
     image[:, :, :3] = misc.imresize(img[:, :, :3].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
         np.float64)
@@ -155,8 +157,10 @@ def batch_resize(img, deter_h, deter_w):
         np.float64)
     image[:, :, 5:8] = misc.imresize(img[:, :, 5:8].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
         np.float64)
-    image[:, :, 8:11] = misc.imresize(img[:, :, 8:11].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
-        np.float64)
+    image[:, :, 8:11] = misc.imresize(img[:, :, 8:11].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(np.float64)
+    image[:, :, 11] = misc.imresize(img[:, :, 11].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(np.float64)
+    image[:, :, 12] = misc.imresize(img[:, :, 12].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(np.float64)
+
     return image
 
 
