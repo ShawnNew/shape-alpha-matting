@@ -71,22 +71,23 @@ class Preprocessor:
         files_list = self.dataset_dict[small_folder]  # file relative path list
         if shuffle:
             random.shuffle(files_list)
-
-        num_train = math.ceil(small_count * prop_train)
-        num_val = math.ceil(small_count * prop_val)
-        num_test = small_count - num_train - num_val
+        
+        # split the dataset here
+        num_train = int(math.ceil(small_count * prop_train))
+        num_val = int(math.floor(small_count * prop_val))
+        num_test = int(small_count - num_train - num_val)
+        split_list = [files_list[:num_train], \
+                      files_list[num_train:num_val+num_train],\
+                      files_list[num_val+num_train:]]
 
         train_path = os.path.join(self.root_dir_, 'train.txt')
         val_path = os.path.join(self.root_dir_, 'val.txt')
         test_path = os.path.join(self.root_dir_, 'test.txt')
-        list_ = [train_path, val_path, test_path]
-        pdb.set_trace()
+        file_list = [train_path, val_path, test_path]
         writeDataSetFile(self.dataset_dict, \
-                        list_, \
-                        [files_list[:num_train],
-                        files_list[num_train: num_train+num_val],
-                        files_list[num_train+num_val:]])
-        self.dataset_split_list_ = list_
+                        file_list, \
+                        split_list)
+        self.dataset_split_list_ = file_list
 
     
     def writeHDF5Files(self, scale=1):
