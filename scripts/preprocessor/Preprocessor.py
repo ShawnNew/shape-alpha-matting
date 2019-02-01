@@ -121,11 +121,12 @@ class Preprocessor:
 
                     sample_array = np.concatenate([raw_img_, \
                                                 np.expand_dims(raw_tri_map_, axis=2), \
-                                                np.expand_dims(raw_gradient_, axis=2), \
-                                                np.expand_dims(raw_roughness_, axis=2), \
                                                 np.expand_dims(raw_gt_, axis=2), \
                                                 raw_fg_, \
-                                                raw_bg_], axis=2).astype(np.float64)
+                                                raw_bg_, \
+                                                np.expand_dims(raw_gradient_, axis=2), \
+                                                np.expand_dims(raw_roughness_, axis=2)
+                                                ], axis=2).astype(np.float64)
                     sample_array = self.imgCropper(sample_array, \
                                                 self.img_size_)
                     flip = random.choice(self.flip_list_)
