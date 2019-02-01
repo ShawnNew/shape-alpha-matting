@@ -1,61 +1,27 @@
-name: "ShapeDeepMattingNet_S1"
+name: "ShapeDeepMattingNet_Deploy"
+
 # --------------------------- Encoder Network --------------------
 # Input data is four or more channel, because add tri-map and other
 # information.
 layer {
-  type: "HDF5Data"
-  top: "dataset"
-  hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/train.txt"
-    batch_size: 4
-  }
-  include {
-    phase: TRAIN
-  }
+    name: "image"
+    type: "Input"
+    top: "data"
+    input_param {shape: {dim: 1 dim: 3 dim: 224 dim: 224}}
+}
+layer {
+    name: "trimap"
+    type: "Input"
+    top: "tri-map"
+    input_param {shape: {dim: 1 dim: 1 dim: 224 dim: 224}}
 }
 
-layer {
-  type: "HDF5Data"
-  top: "dataset"
-  hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/val.txt"
-    batch_size: 4
-  }
-  include {
-    phase: TEST
-  }
-}
-
-# slice the batch data into train-data, gt, fg, bg
-layer {
-  name: "slice"
-  type: "Slice"
-  bottom: "dataset"
-  top: "data"
-  top: "tri-map"
-  top: "gt"
-  top: "fg"
-  top: "bg"
-  top: "gradient"
-  top: "roughness"
-  slice_param {
-    axis: 1
-    slice_point: 3
-    slice_point: 4
-    slice_point: 5
-    slice_point: 8
-    slice_point: 11
-    slice_point: 12
-  }
-}
 
 # Add concat layer to concat tri-map and raw images.
 layer {
   name: "concat_train"
   bottom: "tri-map"
   bottom: "data"
-  bottom: "gradient"
-  bottom: "roughness"
   top: "train_data"
   type: "Concat"
   concat_param {
@@ -73,11 +39,11 @@ layer {
   name: "conv1_1_matting"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -463,6 +429,39 @@ layer {
 # The above is same as VGG-16, the following is adapted for matting.
 # Initialze this layer with random value, and train this layer from
 # start.
+# layer {
+#   name: "conv6_1"
+#   bottom: "pool5"
+#   top: "conv6_1"
+#   type: "Convolution"
+#   param {
+#     lr_mult: 10
+#     decay_mult: 1
+#   }
+#   param {
+#     lr_mult: 20
+#     decay_mult: 0
+#   }
+#   convolution_param {
+#     weight_filler {
+#       type: "xavier"
+#     }
+#     bias_filler {
+#       type: "constant"
+#       value: 0
+#     }
+#     num_output: 4096
+#     pad: 0
+#     kernel_size: 7
+#   }    
+# }
+# layer {
+#   bottom: "conv6_1"
+#   top: "conv6_1"
+#   name: "relu5_3"
+#   type: "ReLU"
+# }
+
 # ------------------------ Decoder ---------------------------
 layer {
   bottom: "pool5"
@@ -470,11 +469,11 @@ layer {
   name: "deconv_6"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -497,6 +496,7 @@ layer {
   type: "ReLU"
 }
 
+
 layer {
   name: "unpool5_1"
   bottom: "deconv_6"
@@ -516,11 +516,11 @@ layer {
   name: "deconv5_2"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -543,6 +543,7 @@ layer {
   type: "ReLU"
 }
 
+
 layer {
   name: "unpool4_1"
   bottom: "deconv5_2"
@@ -562,11 +563,11 @@ layer {
   name: "deconv4_2"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -589,6 +590,7 @@ layer {
   type: "ReLU"
 }
 
+
 layer {
   name: "unpool3_1"
   bottom: "deconv4_2"
@@ -608,11 +610,11 @@ layer {
   name: "deconv3_2"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -635,6 +637,7 @@ layer {
   type: "ReLU"
 }
 
+
 layer {
   name: "unpool2_1"
   bottom: "deconv3_2"
@@ -654,11 +657,11 @@ layer {
   name: "deconv2_2"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -681,6 +684,7 @@ layer {
   type: "ReLU"
 }
 
+
 layer {
   name: "unpool1_1"
   bottom: "deconv2_2"
@@ -700,11 +704,11 @@ layer {
   top: "deconv1_2"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -727,17 +731,18 @@ layer {
   type: "ReLU"
 }
 
+
 layer {
   name: "conv_output"
   bottom: "deconv1_2"
   top: "conv_output"
   type: "Convolution"
   param {
-    lr_mult: 10
+    lr_mult: 1
     decay_mult: 1
   }
   param {
-    lr_mult: 20
+    lr_mult: 2
     decay_mult: 0
   }
   convolution_param {
@@ -760,50 +765,6 @@ layer {
   type: "Sigmoid"
 }
 
-# ---------------------------- Loss ---------------------------
-# concat a y_true blob for alpha loss
-layer {
-  name: "concat_y_true"
-  type: "Concat"
-  bottom: "tri-map"
-  bottom: "data"
-  bottom: "gt"
-  bottom: "fg"
-  bottom: "bg"
-  top: "y_true"
-  concat_param {
-    axis: 1  # axis=1 represents that the concat is adding the channels
-  }
-}
 
-# ================== python version euclideanloss =================
-layer {
-  name: "loss"
-  type: "Python"
-  top: "loss"
-  bottom: "sigmoid_pred"
-  bottom: "y_true"
-  python_param {
-    module: "overallLoss"
-    layer: "EncoderDecoderLossLayer"
-    param_str: '{"epsilon": 1e-6,"w_l": 0.5}'
-  }
-  loss_weight: 1
-}
 
-layer {
-  name: "accuracy"
-  type: "Python"
-  top: "accuracy"
-  bottom: "sigmoid_pred"
-  bottom: "y_true"
-  python_param {
-    module: "overallLoss"
-    layer: "EncoderDecoderLossLayer"
-    param_str: '{"epsilon": 1e-6,"w_l": 0.5}'
-  }
-  loss_weight: 1
-  include {
-    phase: TEST
-  }
-}
+

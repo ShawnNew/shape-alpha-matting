@@ -54,8 +54,6 @@ layer {
   name: "concat_train"
   bottom: "tri-map"
   bottom: "data"
-  bottom: "gradient"
-  bottom: "roughness"
   top: "train_data"
   type: "Concat"
   concat_param {
@@ -765,8 +763,7 @@ layer {
 layer {
   name: "concat_y_true"
   type: "Concat"
-  bottom: "tri-map"
-  bottom: "data"
+  bottom: "train_data"
   bottom: "gt"
   bottom: "fg"
   bottom: "bg"

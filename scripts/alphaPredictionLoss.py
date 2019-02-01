@@ -29,8 +29,8 @@ class AlphaPredictionLossLayer(caffe.Layer):
         self.mask = np.reshape(self.mask, (-1, 1, self.shape[0], self.shape[1]))
         self.alpha = np.reshape(self.alpha, (-1, 1, self.shape[0], self.shape[1]))
         self.mask[self.mask == 0.] *= 0.
-        self.mask[self.mask == 1.] *= 0.
-        self.mask[self.mask != 0.] = 1.
+        self.mask[self.mask == 255.] *= 0.
+        self.mask[self.mask == 128.] = 1.
         self.num_pixels = np.sum(self.mask)
 
     def forward(self, bottom, top):
@@ -38,7 +38,6 @@ class AlphaPredictionLossLayer(caffe.Layer):
         top[0].data[...] = self.alpha_prediction_loss(self.pred)
 
     def backward(self, top, propagate_down, bottom):
-        #print "~~~~~~~~~~~~~~~~~~~~~~~~ Back once ~~~~~~~~~~~~~~~~~~~~~~~~~~~"
         for i in range(2):
             if not propagate_down[i]:
                 continue
