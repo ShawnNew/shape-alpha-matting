@@ -45,9 +45,9 @@ class Preprocessor:
         Shuffle, split the dataset and record the index as txt files.
         """
         def writeDataSetFile(dict_, fns, list_):
-            for fn in fns:
-                with open(fn, 'w') as f:
-                    for item in list_:
+            for i in range(len(fns)):
+                with open(fns[i], 'w') as f:
+                    for item in list_[i]:
                         # f.write(dict_.values)
                         for key in dict_.keys():
                             temp_path = './' + \
@@ -72,13 +72,20 @@ class Preprocessor:
         if shuffle:
             random.shuffle(files_list)
 
+        num_train = math.ceil(small_count * prop_train)
+        num_val = math.ceil(small_count * prop_val)
+        num_test = small_count - num_train - num_val
+
         train_path = os.path.join(self.root_dir_, 'train.txt')
         val_path = os.path.join(self.root_dir_, 'val.txt')
         test_path = os.path.join(self.root_dir_, 'test.txt')
         list_ = [train_path, val_path, test_path]
+        pdb.set_trace()
         writeDataSetFile(self.dataset_dict, \
                         list_, \
-                        files_list)
+                        [files_list[:num_train],
+                        files_list[num_train: num_train+num_val],
+                        files_list[num_train+num_val:]])
         self.dataset_split_list_ = list_
 
     
