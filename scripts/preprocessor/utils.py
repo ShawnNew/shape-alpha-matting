@@ -116,15 +116,15 @@ def validUnknownRegion(img, output_size):
     return h_start, h_end, w_start, w_end
 
 
-def batch_resize_by_scale(img, scale):
+def batch_resize_by_scale(img, scale, channels):
     '''
-    :param img: The input image, should be shape like [:,:,11]
+    :param img: The input image, should be shape like [:,:,channels]
     :param deter_h: The picture height as you wish to resize to
     :param deter_w: The picture width as you wish to resize to
-    :return: A vector with shape [deter_h, deter_w, 11]
+    :return: A vector with shape [deter_h, deter_w, channels]
     '''
     shape_ = img.shape
-    image = np.zeros([shape_[0]*int(scale), shape_[1]*int(scale), 13])
+    image = np.zeros([shape_[0]*int(scale), shape_[1]*int(scale), channels])
     # try:
     image[:, :, :3] = misc.imresize(img[:, :, :3], scale, interp='nearest').astype(
         np.float64)
@@ -140,14 +140,14 @@ def batch_resize_by_scale(img, scale):
     image[:, :, 12] = misc.imresize(img[:, :, 12], scale, interp='nearest').astype(np.float64)
     return image
 
-def batch_resize(img, deter_h, deter_w):
+def batch_resize(img, deter_h, deter_w, channels):
     '''
-    :param img: The input image, should be shape like [:,:,11]
+    :param img: The input image, should be shape like [:,:,channels]
     :param deter_h: The picture height as you wish to resize to
     :param deter_w: The picture width as you wish to resize to
-    :return: A vector with shape [deter_h, deter_w, 11]
+    :return: A vector with shape [deter_h, deter_w, channels]
     '''
-    image = np.zeros([deter_h, deter_w, 13])
+    image = np.zeros([deter_h, deter_w, channels])
     # try:
     image[:, :, :3] = misc.imresize(img[:, :, :3].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
         np.float64)
