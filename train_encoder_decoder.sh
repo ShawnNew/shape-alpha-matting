@@ -1,6 +1,6 @@
 #!/bin/bash
 
-LOG=./log/train-`date +%Y-%m-%d-%H-%M-%S`.log
+LOG=./log/ee/train-`date +%Y-%m-%d-%H-%M-%S`.log
 solver=./models/solvers/solver_S1.prototxt
 weights=./models/weights/VGG16_SalObjSub.caffemodel
 

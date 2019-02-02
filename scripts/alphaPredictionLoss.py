@@ -23,14 +23,14 @@ class AlphaPredictionLossLayer(caffe.Layer):
         top[0].reshape(1)
         # reshape the data
         self.pred = bottom[0].data[:,0,:,:]
-        self.mask = bottom[1].data[:,0,:,:]
-        self.alpha = bottom[1].data[:,1,:,:]
+        self.mask = bottom[1].data[:,0,:,:] / 255.
+        self.alpha = bottom[1].data[:,1,:,:] / 255.
         self.pred = np.reshape(self.pred, (-1, 1, self.shape[0], self.shape[1]))
         self.mask = np.reshape(self.mask, (-1, 1, self.shape[0], self.shape[1]))
         self.alpha = np.reshape(self.alpha, (-1, 1, self.shape[0], self.shape[1]))
         self.mask[self.mask == 0.] *= 0.
-        self.mask[self.mask == 255.] *= 0.
-        self.mask[self.mask == 128.] = 1.
+        self.mask[self.mask == 1.] *= 0.
+        self.mask[self.mask != 0.] = 1.
         self.num_pixels = np.sum(self.mask)
 
     def forward(self, bottom, top):
