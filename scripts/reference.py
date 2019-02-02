@@ -30,18 +30,18 @@ image_path = args.image
 # trimap_path = args.trimap
 # weights = args.weights
 
-model = "/home/dl/Codes/shape-alpha-matting/models/shape_alpha_matting_deploy.prototxt"
+model = "/home/dl/Codes/shape-alpha-matting/models/shapeAlphaMattingNet_deploy.prototxt"
 # pdb.set_trace()
 base_image_path = "/home/dl/Codes/shape-alpha-matting/examples/original"
 base_trimap_path = "/home/dl/Codes/shape-alpha-matting/examples/trimap"
-weights = "/home/dl/Codes/shape-alpha-matting/models/snapshots/refine/shape_alpha_matting.caffemodel"
+weights = "/home/dl/Codes/shape-alpha-matting/models/snapshots/refine/Refine_training_iter_400000.caffemodel"
 image_path = os.path.join(base_image_path, args.image)
 trimap_path = os.path.join(base_trimap_path, args.image)
 
 NN_SIZE = 224
 
 caffe.set_mode_gpu()
-caffe.set_device(1)
+caffe.set_device(2)
 
 net = caffe.Net(model, weights, caffe.TEST)
 
@@ -58,7 +58,7 @@ net.blobs['tri-map'].reshape(1, 1, NN_SIZE, NN_SIZE)
 net.blobs['data'].data[...] = image
 net.blobs['tri-map'].data[...] = tri_map
 net.forward()
-result = net.blobs['refine_output'].data * 255
+result = net.blobs['alpha_output'].data * 255
 result = np.reshape(result, (NN_SIZE, NN_SIZE)).astype(np.uint8)
 result = cv.resize(result, (img_shape[1], img_shape[0]), interpolation=cv.INTER_CUBIC)
 result_img_ = Image.fromarray(result)

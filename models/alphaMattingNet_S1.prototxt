@@ -1,0 +1,806 @@
+name: "ShapeDeepMattingNet_S1"
+# --------------------------- Encoder Network --------------------
+# Input data is four or more channel, because add tri-map and other
+# information.
+layer {
+  type: "HDF5Data"
+  top: "dataset"
+  hdf5_data_param {
+    source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/train.txt"
+    batch_size: 4
+  }
+  include {
+    phase: TRAIN
+  }
+}
+
+layer {
+  type: "HDF5Data"
+  top: "dataset"
+  hdf5_data_param {
+    source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/val.txt"
+    batch_size: 4
+  }
+  include {
+    phase: TEST
+  }
+}
+
+# slice the batch data into train-data, gt, fg, bg
+layer {
+  name: "slice"
+  type: "Slice"
+  bottom: "dataset"
+  top: "data"
+  top: "tri-map"
+  top: "gt"
+  top: "fg"
+  top: "bg"
+  top: "gradient"
+  top: "roughness"
+  slice_param {
+    axis: 1
+    slice_point: 3
+    slice_point: 4
+    slice_point: 5
+    slice_point: 8
+    slice_point: 11
+    slice_point: 12
+  }
+}
+
+# Add concat layer to concat tri-map and raw images.
+layer {
+  name: "concat_train"
+  bottom: "tri-map"
+  bottom: "data"
+  top: "train_data"
+  type: "Concat"
+  concat_param {
+    axis: 1  # axis=1 represents that the concat is adding the channels
+  }
+}
+
+
+# The first conv layer is different from VGG-16's, due to the add-on
+# channel tri-map. Within this layer, set the learning rate at a
+# higher level, because this layer is initialized with random value.
+layer {
+  bottom: "train_data"
+  top: "conv1_1"
+  name: "conv1_1_matting"
+  type: "Convolution"
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv1_1"
+  top: "conv1_1"
+  name: "relu1_1"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv1_1"
+  top: "conv1_2"
+  name: "conv1_2"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 64
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv1_2"
+  top: "conv1_2"
+  name: "relu1_2"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv1_2"
+  top: "pool1"
+  top: "pool1_mask"
+  name: "pool1"
+  type: "Pooling"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2  # pool over a 2*2 region
+    stride: 2       # step two pixels (in the bottom)
+  }
+}
+layer {
+  bottom: "pool1"
+  top: "conv2_1"
+  name: "conv2_1"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 128
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv2_1"
+  top: "conv2_1"
+  name: "relu2_1"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv2_1"
+  top: "conv2_2"
+  name: "conv2_2"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 128
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv2_2"
+  top: "conv2_2"
+  name: "relu2_2"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv2_2"
+  top: "pool2"
+  top: "pool2_mask"
+  name: "pool2"
+  type: "Pooling"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  bottom: "pool2"
+  top: "conv3_1"
+  name: "conv3_1"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv3_1"
+  top: "conv3_1"
+  name: "relu3_1"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv3_1"
+  top: "conv3_2"
+  name: "conv3_2"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv3_2"
+  top: "conv3_2"
+  name: "relu3_2"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv3_2"
+  top: "conv3_3"
+  name: "conv3_3"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 256
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv3_3"
+  top: "conv3_3"
+  name: "relu3_3"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv3_3"
+  top: "pool3"
+  top: "pool3_mask"
+  name: "pool3"
+  type: "Pooling"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  bottom: "pool3"
+  top: "conv4_1"
+  name: "conv4_1"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv4_1"
+  top: "conv4_1"
+  name: "relu4_1"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv4_1"
+  top: "conv4_2"
+  name: "conv4_2"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv4_2"
+  top: "conv4_2"
+  name: "relu4_2"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv4_2"
+  top: "conv4_3"
+  name: "conv4_3"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv4_3"
+  top: "conv4_3"
+  name: "relu4_3"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv4_3"
+  top: "pool4"
+  top: "pool4_mask"
+  name: "pool4"
+  type: "Pooling"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+layer {
+  bottom: "pool4"
+  top: "conv5_1"
+  name: "conv5_1"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv5_1"
+  top: "conv5_1"
+  name: "relu5_1"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv5_1"
+  top: "conv5_2"
+  name: "conv5_2"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv5_2"
+  top: "conv5_2"
+  name: "relu5_2"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv5_2"
+  top: "conv5_3"
+  name: "conv5_3"
+  type: "Convolution"
+  param {
+    lr_mult: 1
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 2
+    decay_mult: 0
+  }
+  convolution_param {
+    num_output: 512
+    pad: 1
+    kernel_size: 3
+  }
+}
+layer {
+  bottom: "conv5_3"
+  top: "conv5_3"
+  name: "relu5_3"
+  type: "ReLU"
+}
+layer {
+  bottom: "conv5_3"
+  top: "pool5"
+  top: "pool5_mask"
+  name: "pool5"
+  type: "Pooling"
+  pooling_param {
+    pool: MAX
+    kernel_size: 2
+    stride: 2
+  }
+}
+
+# The above is same as VGG-16, the following is adapted for matting.
+# Initialze this layer with random value, and train this layer from
+# start.
+# ------------------------ Decoder ---------------------------
+layer {
+  bottom: "pool5"
+  top: "deconv_6"
+  name: "deconv_6"
+  type: "Convolution"
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 512
+    pad: 0
+    kernel_size: 1
+  }    
+}
+layer {
+  name: "relu_6"
+  bottom: "deconv_6"
+  top: "deconv_6"
+  type: "ReLU"
+}
+
+layer {
+  name: "unpool5_1"
+  bottom: "deconv_6"
+  bottom: "pool5_mask"
+  top: "unpool5_1"
+  type: "Unpooling"
+  unpooling_param {
+    unpool: MAX
+    kernel_size: 2
+    stride: 2
+    unpool_size: 14
+  }
+}
+layer {
+  bottom: "unpool5_1"
+  top: "deconv5_2"
+  name: "deconv5_2"
+  type: "Convolution"
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 512
+    pad: 2
+    kernel_size: 5
+  }    
+}
+layer {
+  name: "relu5_2"
+  bottom: "deconv5_2"
+  top: "deconv5_2"
+  type: "ReLU"
+}
+
+layer {
+  name: "unpool4_1"
+  bottom: "deconv5_2"
+  bottom: "pool4_mask"
+  top: "unpool4_1"
+  type: "Unpooling"
+  unpooling_param {
+    unpool: MAX
+    kernel_size: 2
+    stride: 2
+    unpool_size: 28
+  }
+}
+layer {
+  bottom: "unpool4_1"
+  top: "deconv4_2"
+  name: "deconv4_2"
+  type: "Convolution"
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 256
+    pad: 2
+    kernel_size: 5
+  }    
+}
+layer {
+  name: "relu4_2"
+  bottom: "deconv4_2"
+  top: "deconv4_2"
+  type: "ReLU"
+}
+
+layer {
+  name: "unpool3_1"
+  bottom: "deconv4_2"
+  bottom: "pool3_mask"
+  top: "unpool3_1"
+  type: "Unpooling"
+  unpooling_param {
+    unpool: MAX
+    kernel_size: 2
+    stride: 2
+    unpool_size: 56
+  }
+}
+layer {
+  bottom: "unpool3_1"
+  top: "deconv3_2"
+  name: "deconv3_2"
+  type: "Convolution"
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 128
+    pad: 2
+    kernel_size: 5
+  }    
+}
+layer {
+  name: "relu3_2"
+  bottom: "deconv3_2"
+  top: "deconv3_2"
+  type: "ReLU"
+}
+
+layer {
+  name: "unpool2_1"
+  bottom: "deconv3_2"
+  bottom: "pool2_mask"
+  top: "unpool2_1"
+  type: "Unpooling"
+  unpooling_param {
+    unpool: MAX
+    kernel_size: 2
+    stride: 2
+    unpool_size: 112
+  }
+}
+layer {
+  bottom: "unpool2_1"
+  top: "deconv2_2"
+  name: "deconv2_2"
+  type: "Convolution"
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 64
+    pad: 2
+    kernel_size: 5
+  }    
+}
+layer {
+  name: "relu2_2"
+  bottom: "deconv2_2"
+  top: "deconv2_2"
+  type: "ReLU"
+}
+
+layer {
+  name: "unpool1_1"
+  bottom: "deconv2_2"
+  bottom: "pool1_mask"
+  top: "unpool1_1"
+  type: "Unpooling"
+  unpooling_param {
+    unpool: MAX
+    kernel_size: 2
+    stride: 2
+    unpool_size: 224
+  }
+}
+layer {
+  name: "deconv1_2"
+  bottom: "unpool1_1"
+  top: "deconv1_2"
+  type: "Convolution"
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 64
+    pad: 2
+    kernel_size: 5
+  }    
+}
+layer {
+  name: "relu1_2"
+  bottom: "deconv1_2"
+  top: "deconv1_2"
+  type: "ReLU"
+}
+
+layer {
+  name: "conv_output"
+  bottom: "deconv1_2"
+  top: "conv_output"
+  type: "Convolution"
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 0
+  }
+  convolution_param {
+    weight_filler {
+      type: "xavier"
+    }
+    bias_filler {
+      type: "constant"
+      value: 0
+    }
+    num_output: 1
+    pad: 2
+    kernel_size: 5
+  }    
+}
+layer {
+  name: "sigmoid_output"
+  bottom: "conv_output"
+  top: "sigmoid_pred"
+  type: "Sigmoid"
+}
+
+# ---------------------------- Loss ---------------------------
+# concat a y_true blob for alpha loss
+layer {
+  name: "concat_y_true"
+  type: "Concat"
+  bottom: "train_data"
+  bottom: "gt"
+  bottom: "fg"
+  bottom: "bg"
+  top: "y_true"
+  concat_param {
+    axis: 1  # axis=1 represents that the concat is adding the channels
+  }
+}
+
+# ================== python version euclideanloss =================
+layer {
+  name: "loss"
+  type: "Python"
+  top: "loss"
+  bottom: "sigmoid_pred"
+  bottom: "y_true"
+  python_param {
+    module: "overallLoss"
+    layer: "EncoderDecoderLossLayer"
+    param_str: '{"epsilon": 1e-6,"w_l": 0.5}'
+  }
+  loss_weight: 1
+}
+
+layer {
+  name: "accuracy"
+  type: "Python"
+  top: "accuracy"
+  bottom: "sigmoid_pred"
+  bottom: "y_true"
+  python_param {
+    module: "overallLoss"
+    layer: "EncoderDecoderLossLayer"
+    param_str: '{"epsilon": 1e-6,"w_l": 0.5}'
+  }
+  loss_weight: 1
+  include {
+    phase: TEST
+  }
+}
