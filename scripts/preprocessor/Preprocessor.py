@@ -87,14 +87,15 @@ class Preprocessor:
         writeDataSetFile(self.dataset_dict, \
                         file_list, \
                         split_list)
-        self.dataset_split_list_ = file_list
+        #self.dataset_split_list_ = file_list
 
     
     def writeHDF5Files(self, scale=1):
-        for file in self.dataset_split_list_:
-            dataset_file_ = os.path.join(self.root_dir_, file)
+        for dataset_file in os.listdir(self.root_dir_):
+          if dataset_file.endswith('.txt'):
+            dataset_file_ = os.path.join(self.root_dir_, dataset_file)
             output_file_path_ = os.path.join(self.output_dir_, \
-                                os.path.basename(file).replace(".txt", ""))
+                                dataset_file.replace(".txt", ""))
             print "Dataset file name is:", dataset_file_
             with open(dataset_file_, 'r') as f:
                 lines_ = f.readlines()
@@ -138,12 +139,12 @@ class Preprocessor:
                     print "Processed %d samples"% int(i+1)
                     if sample_count_+1 == self.samples_: # write SAMPLES images into hdf5 file
                         file_count += 1
-                        filename = os.path.basename(file).replace(".txt", "")
+                        filename = dataset_file.replace(".txt", "")
                         filename += str(file_count) + ".h5"
                         filepath = os.path.join(output_file_path_, filename)
                         print "Writing file:", filepath
                         writeH5Files(data, filepath)
-                filename = os.path.basename(file).replace(".txt", "")
+                filename = dataset_file.replace(".txt", "")
                 filename += str(file_count+1) +  ".h5"
                 filepath = os.path.join(output_file_path_, filename)
                 print "Writing file:", filepath

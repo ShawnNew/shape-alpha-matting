@@ -12,7 +12,7 @@ parser.add_argument("-d", "--directory", \
                     help="Please specify the directory of the images dataset.")
 parser.add_argument("-o", "--output", \
                     type=str, \
-                    default="../dataset", \
+                    default="/home/dl/harddisk/Datasets/adobe-h5", \
                     help="Please specify the directory of the output.")
 parser.add_argument("-s", "--size", \
                     type=int, \
@@ -28,6 +28,6 @@ if __name__ == '__main__':
     
     preprocessor = Preprocessor(dataset_root, output_dir, img_size, SAMPLES)
     preprocessor.parseDatasetDirectory()
-    preprocessor.getSplitedDataset(prop_train=0.7, \
-                            prop_test=0.15, prop_val=0.15, shuffle=True)
+    #preprocessor.getSplitedDataset(prop_train=0.7, \
+    #                        prop_test=0.15, prop_val=0.15, shuffle=True)
     preprocessor.writeHDF5Files()
