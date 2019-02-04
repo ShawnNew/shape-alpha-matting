@@ -14,9 +14,16 @@ def writeH5Files(samples_array, file_path):
     dir_, _ = os.path.split(file_path)
     if not os.path.exists(dir_): os.mkdir(dir_)
     hdf_file = h5py.File(file_path, 'w')
-    shape = samples_array[0].shape
-    chunks_data = (1, shape[0], shape[1], shape[2])
-    hdf_file.create_dataset('dataset', dtype=np.float, data=samples_array, chunks=chunks_data)
+    hdf_file['data'] = samples_array[:, :3, :, :] 
+    hdf_file['tri-map'] = np.expand_dims(samples_array[:, 3, :, :], axis=1) 
+    hdf_file['gt'] = np.expand_dims(samples_array[:, 4, :, :], axis=1)
+    hdf_file['fg'] = samples_array[:, 5:8, :, :]
+    hdf_file['bg'] = samples_array[:, 8:11, :, :]
+    hdf_file['gradient'] = np.expand_dims(samples_array[:, 11, :, :], axis=1)
+    hdf_file['roughness'] = np.expand_dims(samples_array[:, 12, :, :], axis=1)
+    #shape = samples_array[0].shape
+    #chunks_data = (1, shape[0], shape[1], shape[2])
+    #hdf_file.create_dataset('dataset', dtype=np.float, data=samples_array, chunks=chunks_data)
     hdf_file.flush()
     hdf_file.close()
 

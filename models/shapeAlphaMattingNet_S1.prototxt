@@ -4,7 +4,13 @@ name: "ShapeDeepMattingNet_S1"
 # information.
 layer {
   type: "HDF5Data"
-  top: "dataset"
+  top: "data"
+  top: "tri-map"
+  top: "gt"
+  top: "fg"
+  top: "bg"
+  top: "gradient"
+  top: "roughness"
   hdf5_data_param {
     source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/train.txt"
     batch_size: 4
@@ -16,21 +22,6 @@ layer {
 
 layer {
   type: "HDF5Data"
-  top: "dataset"
-  hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/val.txt"
-    batch_size: 4
-  }
-  include {
-    phase: TEST
-  }
-}
-
-# slice the batch data into train-data, gt, fg, bg
-layer {
-  name: "slice"
-  type: "Slice"
-  bottom: "dataset"
   top: "data"
   top: "tri-map"
   top: "gt"
@@ -38,14 +29,12 @@ layer {
   top: "bg"
   top: "gradient"
   top: "roughness"
-  slice_param {
-    axis: 1
-    slice_point: 3
-    slice_point: 4
-    slice_point: 5
-    slice_point: 8
-    slice_point: 11
-    slice_point: 12
+  hdf5_data_param {
+    source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/val.txt"
+    batch_size: 4
+  }
+  include {
+    phase: TEST
   }
 }
 

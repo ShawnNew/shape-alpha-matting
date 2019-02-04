@@ -5,7 +5,13 @@ name: "ShapeDeepMattingNet_S2"
 # information.
 layer {
   type: "HDF5Data"
-  top: "dataset"
+  top: "data"
+  top: "tri-map"
+  top: "gt"
+  top: "fg"
+  top: "bg"
+  top: "gradient"
+  top: "roughness"
   hdf5_data_param {
     source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/train.txt"
     batch_size: 4
@@ -17,7 +23,6 @@ layer {
 
 layer {
   type: "HDF5Data"
-  top: "dataset"
   hdf5_data_param {
     source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/val.txt"
     batch_size: 10
