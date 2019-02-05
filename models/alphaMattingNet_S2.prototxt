@@ -8,10 +8,8 @@ layer {
   top: "data"
   top: "tri-map"
   top: "gt"
-  top: "fg"
-  top: "bg"
   hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/train.txt"
+    source: "/home/dl/harddisk/Datasets/adobe-h5/train.txt"
     batch_size: 4
   }
   include {
@@ -24,10 +22,8 @@ layer {
   top: "data"
   top: "tri-map"
   top: "gt"
-  top: "fg"
-  top: "bg"
   hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with0shape-data/val.txt"
+    source: "/home/dl/harddisk/Datasets/adobe-h5/test.txt"
     batch_size: 4
   }
   include {
