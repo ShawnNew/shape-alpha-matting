@@ -15,12 +15,26 @@ layer {
   top: "tri-map"
   input_param {shape: {dim: 1 dim: 1 dim: 224 dim: 224}}
 }
+layer {
+  name: "gradient"
+  type: "Input"
+  top: "gradient"
+  input_param {shape: {dim: 1 dim: 1 dim: 224 dim: 224}}
+}
+layer {
+  name: "roughness"
+  type: "Input"
+  top: "roughness"
+  input_param {shape: {dim: 1 dim: 1 dim: 224 dim: 224}}
+}
 
 # Add concat layer to concat tri-map and raw images.
 layer {
   name: "concat_train"
   bottom: "tri-map"
   bottom: "data"
+  bottom: "gradient"
+  bottom: "roughness"
   top: "train_data"
   type: "Concat"
   concat_param {

@@ -1,4 +1,4 @@
-name: "ShapeDeepMattingNet_Deploy"
+name: "DeepMattingNet_Deploy"
 
 # --------------------------- Encoder Network --------------------
 # Input data is four or more channel, because add tri-map and other
