@@ -12,7 +12,7 @@ layer {
   top: "gradient"
   top: "roughness"
   hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/train.txt"
+    source: "/home/dl/harddisk/Datasets/adobe-h5/train.txt"
     batch_size: 4
   }
   include {
@@ -30,7 +30,7 @@ layer {
   top: "gradient"
   top: "roughness"
   hdf5_data_param {
-    source: "/home/dl/Codes/shape-alpha-matting/dataset/dataset-with-shape-data/val.txt"
+    source: "/home/dl/harddisk/Datasets/adobe-h5/val.txt"
     batch_size: 4
   }
   include {

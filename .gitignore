@@ -6,3 +6,5 @@ dataset
 log
 *snapshots/
 *examples/
+shape-test-output
+test-output

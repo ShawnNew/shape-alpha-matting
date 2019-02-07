@@ -6,7 +6,7 @@ momentum: 0.9
 momentum2: 0.999
 lr_policy: "fixed"
 display: 50
-max_iter: 438800
+max_iter: 219400
 snapshot: 5000
 snapshot_prefix: "/home/dl/Codes/shape-alpha-matting/models/snapshots/shapeAlphaNet/all/Refine_training"
 type: "Adam"
