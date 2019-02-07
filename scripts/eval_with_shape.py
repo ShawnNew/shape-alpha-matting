@@ -58,7 +58,7 @@ if __name__ == "__main__":
             log.info("Processed %s, consumed %f second."% (item_name, duration))
             pred = cv2.resize(
                 pred, (original_shape[1], original_shape[0]), \
-                interpolation=cv2.INTER_CUPIC
+                interpolation=cv2.INTER_CUBIC
             )
             shape_mse += compute_mse_loss(pred, gt, tri_map_original)
             log.info("mse for %s is: %f"% (item_name, shape_mse))
@@ -70,6 +70,6 @@ if __name__ == "__main__":
             time_ += duration
 
         shape_mse /= nums
-        log.info("Mean time consumption every single image is:" (time_ / nums))
-        log.info("Mean mse is:" shape_mse)
+        log.info("Mean time consumption every single image is: %f"% (time_ / nums))
+        log.info("Mean mse is: %f"% shape_mse)
             

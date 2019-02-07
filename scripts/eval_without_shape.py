@@ -11,7 +11,7 @@ from config import _model, _weights, source
 from config import net_input_w, net_input_h
 
 if __name__ == "__main__":
-    _model = alphaNetModel(_model, _weights, "gpu", 3)
+    _model = alphaNetModel(_model, _weights, "gpu", 2)
     _mse = 0
     time_ = 0
     with open(source, 'r') as f:
@@ -43,15 +43,15 @@ if __name__ == "__main__":
                 [data, tri_map], axis=2)
             feed_data_ = np.expand_dims(
                 np.transpose(feed_data_, (2, 0, 1)), axis=0)
-            _model.feed_input_with_shape(feed_data_)
+            _model.feed_input(feed_data_)
             duration, pred = _model.predict_without_shape_data()
             log.info("Processed %s, consumed %f second."% (item_name, duration))
             pred = cv2.resize(
                 pred, (original_shape[1], original_shape[0]), \
-                interpolation=cv2.INTER_CUPIC
+                interpolation=cv2.INTER_CUBIC
             )
             _mse += compute_mse_loss(pred, gt, tri_map_original)
-            print "mse for %s is: %f"% (item_name, _mse)
+            log.info("mse for %s is: %f"% (item_name, _mse))
             output_img = Image.fromarray(pred)
             output_dir = os.path.join("../", "test-output")
             if not os.path.exists(output_dir): os.mkdir(output_dir)
@@ -59,6 +59,6 @@ if __name__ == "__main__":
             output_img.save(output_filename)
             time_ += duration
 
-        shape_mse /= nums
-        log.info("Mean time consumption every single image is:" (time_ / nums))
-        log.info("Mean mse is:" shape_mse)
+        _mse /= nums
+        log.info("Mean time consumption every single image is: %f"% (time_ / nums))
+        log.info("Mean mse is: %f"% _mse)

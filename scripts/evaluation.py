@@ -1,5 +1,6 @@
 import caffe
 import time
+import numpy as np
 
 class ShapeAlphaNetModel:
     def __init__(self, model, weights, device, device_n):
@@ -23,7 +24,7 @@ class ShapeAlphaNetModel:
         duration = time.clock() - t_start
         shape_output = self.net.blobs['alpha_output'].data * 255.
         shape_output = np.reshape(shape_output, \
-                        (self.input_size_[0], self.input_size_[1])).astype(uint8)
+                        (self.input_size_[0], self.input_size_[1])).astype(np.uint8)
         return duration, shape_output
 
 
@@ -47,6 +48,6 @@ class alphaNetModel:
         duration = time.clock() - t_start
         _output = self.net.blobs['alpha_output'].data * 255.
         _output = np.reshape(_output, \
-                    (self.input_size_[0], self.input_size_[1])).astype(uint8)
+                    (self.input_size_[0], self.input_size_[1])).astype(np.uint8)
         return duration, _output
 
