@@ -9,6 +9,7 @@ import glog as log
 from utils import compute_mse_loss
 from config import _model, _weights, source
 from config import net_input_w, net_input_h
+from config import unknown_code
 
 if __name__ == "__main__":
     _model = alphaNetModel(_model, _weights, "gpu", 2)
@@ -46,12 +47,14 @@ if __name__ == "__main__":
             _model.feed_input(feed_data_)
             duration, pred = _model.predict_without_shape_data()
             log.info("Processed %s, consumed %f second."% (item_name, duration))
+            pred = np.where(np.equal(tri_map[:, :, 0], unknown_code), pred, tri_map[:, :, 0])
             pred = cv2.resize(
                 pred, (original_shape[1], original_shape[0]), \
                 interpolation=cv2.INTER_CUBIC
             )
-            _mse += compute_mse_loss(pred, gt, tri_map_original)
-            log.info("mse for %s is: %f"% (item_name, _mse))
+            mse = compute_mse_loss(pred, gt, tri_map_original)
+            _mse += mse
+            log.info("mse for %s is: %f"% (item_name, mse))
             output_img = Image.fromarray(pred)
             output_dir = os.path.join("../", "test-output")
             if not os.path.exists(output_dir): os.mkdir(output_dir)
