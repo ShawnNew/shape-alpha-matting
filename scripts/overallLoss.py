@@ -32,9 +32,9 @@ class EncoderDecoderLossLayer(caffe.Layer):
         self.pred = np.reshape(self.pred, (-1, 1, self.shape[0], self.shape[1]))
         self.mask = np.reshape(self.mask, (-1, 1, self.shape[0], self.shape[1]))
         self.alpha = np.reshape(self.alpha, (-1, 1, self.shape[0], self.shape[1]))
-        #self.mask[self.mask == 0.] *= 0.
-        #self.mask[self.mask == 1.] *= 0.
-        #self.mask[self.mask != 0.] = 1.
+        self.mask[self.mask == 0.] *= 0.
+        self.mask[self.mask == 1.] *= 0.
+        self.mask[self.mask != 0.] = 1.
         self.num_pixels = np.sum(self.mask)
 
     def forward(self, bottom, top):

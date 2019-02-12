@@ -5,7 +5,6 @@ import numpy as np
 from PIL import Image
 import sys
 from utils import *
-import pdb
 
 class Preprocessor:
     # class member
@@ -104,8 +103,6 @@ class Preprocessor:
                     (self.samples_, self.channels, self.img_size_, self.img_size_), \
                     dtype='f4'
                 )
-                print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
-
                 for i, l in enumerate(lines_):
                     # parse data directory
                     items = l.rstrip().replace('./', self.root_dir_).split(' ')
@@ -120,8 +117,11 @@ class Preprocessor:
                     raw_gradient_ = np.asarray(Image.open(items[2]))
                     raw_roughness_ = np.asarray(Image.open(items[3]))
 
+                    # make foreground to unknown
+                    tri_map = np.where(np.equal(raw_tri_map_, 255), 128, raw_tri_map_) 
+                   
                     sample_array = np.concatenate([raw_img_, \
-                                                np.expand_dims(raw_tri_map_, axis=2), \
+                                                np.expand_dims(tri_map, axis=2), \
                                                 np.expand_dims(raw_gt_, axis=2), \
                                                 raw_fg_, \
                                                 raw_bg_, \

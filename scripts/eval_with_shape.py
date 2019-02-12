@@ -9,9 +9,10 @@ import glog as log
 from utils import compute_mse_loss
 from config import shape_model, shape_weights, source
 from config import net_input_w, net_input_h
+from config import unknown_code
 
 if __name__ == "__main__":
-    shape_model = ShapeAlphaNetModel(shape_model, shape_weights, "gpu", 2)
+    shape_model = ShapeAlphaNetModel(shape_model, shape_weights, "gpu", 1)
     shape_mse = 0
     time_ = 0
     with open(source, 'r') as f:
@@ -56,13 +57,15 @@ if __name__ == "__main__":
             shape_model.feed_input_with_shape(feed_data_)
             duration, pred = shape_model.predict_with_shape_data()
             log.info("Processed %s, consumed %f second."% (item_name, duration))
+            pred = np.where(np.equal(tri_map[:, :, 0], unknown_code), pred, tri_map[:, :, 0])
             pred = cv2.resize(
                 pred, (original_shape[1], original_shape[0]), \
                 interpolation=cv2.INTER_CUBIC
             )
-            shape_mse += compute_mse_loss(pred, gt, tri_map_original)
-            log.info("mse for %s is: %f"% (item_name, shape_mse))
-            output_img = Image.fromarray(pred)
+            mse = compute_mse_loss(pred, gt, tri_map_original)
+            shape_mse += mse
+            log.info("mse for %s is: %f"% (item_name, mse))
+            output_img = Image.fromarray(pred).convert("L")
             output_dir = os.path.join("../", "shape-test-output")
             if not os.path.exists(output_dir): os.mkdir(output_dir)
             output_filename = os.path.join(output_dir, item_name)

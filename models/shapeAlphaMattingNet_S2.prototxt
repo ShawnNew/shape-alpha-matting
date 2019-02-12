@@ -12,7 +12,7 @@ layer {
   top: "roughness"
   hdf5_data_param {
     source: "/home/dl/harddisk/Datasets/adobe-h5/train.txt"
-    batch_size: 4
+    batch_size: 10
   }
   include {
     phase: TRAIN
@@ -757,21 +757,21 @@ layer {
 
 # ---------------------------- Refine net ---------------------------
 # Scale the output of the decoder before passing to refine net
-#layer {
-#  name: "scaledDecoder"
-#  type: "Scale"
-#  bottom: "sigmoid_pred"
-#  top: "scaled_decoder"
-#  scale_param {
-#    filler {
-#      value: 255
-#    }
-#    bias_term: false
-#  }
-#}
+layer {
+  name: "scaledDecoder"
+  type: "Scale"
+  bottom: "sigmoid_pred"
+  top: "scaled_decoder"
+  scale_param {
+    filler {
+      value: 255
+    }
+    bias_term: false
+  }
+}
 layer {
   name: "refine_concat"
-  bottom: "sigmoid_pred"
+  bottom: "scaled_decoder"
   bottom: "data"
   top: "refine_data"
   type: "Concat"

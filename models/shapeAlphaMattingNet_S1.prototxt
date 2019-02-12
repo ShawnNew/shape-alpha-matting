@@ -13,7 +13,7 @@ layer {
   top: "roughness"
   hdf5_data_param {
     source: "/home/dl/harddisk/Datasets/adobe-h5/train.txt"
-    batch_size: 4
+    batch_size: 10
   }
   include {
     phase: TRAIN
