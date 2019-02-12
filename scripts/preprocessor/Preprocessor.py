@@ -121,7 +121,7 @@ class Preprocessor:
                     tri_map = np.where(np.equal(raw_tri_map_, 255), 128, raw_tri_map_) 
                    
                     sample_array = np.concatenate([raw_img_, \
-                                                np.expand_dims(raw_tri_map_, axis=2), \
+                                                np.expand_dims(tri_map, axis=2), \
                                                 np.expand_dims(raw_gt_, axis=2), \
                                                 raw_fg_, \
                                                 raw_bg_, \

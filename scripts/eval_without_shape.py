@@ -12,7 +12,7 @@ from config import net_input_w, net_input_h
 from config import unknown_code
 
 if __name__ == "__main__":
-    _model = alphaNetModel(_model, _weights, "gpu", 2)
+    _model = alphaNetModel(_model, _weights, "gpu", 1)
     _mse = 0
     time_ = 0
     with open(source, 'r') as f:
@@ -55,7 +55,7 @@ if __name__ == "__main__":
             mse = compute_mse_loss(pred, gt, tri_map_original)
             _mse += mse
             log.info("mse for %s is: %f"% (item_name, mse))
-            output_img = Image.fromarray(pred)
+            output_img = Image.fromarray(pred).convert("L")
             output_dir = os.path.join("../", "test-output")
             if not os.path.exists(output_dir): os.mkdir(output_dir)
             output_filename = os.path.join(output_dir, item_name)
