@@ -1,6 +1,6 @@
 import os
 import h5py
-import cv2
+import cv2 as cv
 import numpy as np
 import random
 from scipy import misc as misc
@@ -79,8 +79,8 @@ def candidateUnknownRegion(img):
         an index for unknown region
     '''
     index = np.where(img == 128)
-    i = random.choice([j for j in range(len(index[0]))])
-    return np.array(index)[:, i][:2]
+    idx = random.choice([j for j in range(len(index[0]))])
+    return np.array(index)[:, idx]
 
 def validUnknownRegion(img, output_size):
     """
@@ -135,18 +135,34 @@ def batch_resize_by_scale(img, scale, channels):
     shape_ = img.shape
     image = np.zeros([shape_[0]*int(scale), shape_[1]*int(scale), channels])
     # try:
-    image[:, :, :3] = misc.imresize(img[:, :, :3], scale, interp='nearest').astype(
-        np.float64)
-    image[:, :, 3] = misc.imresize(img[:, :, 3], scale, interp='nearest').astype(
-        np.float64)
-    image[:, :, 4] = misc.imresize(img[:, :, 4], scale, interp='nearest').astype(
-        np.float64)
-    image[:, :, 5:8] = misc.imresize(img[:, :, 5:8], scale, interp='nearest').astype(
-        np.float64)
-    image[:, :, 8:11] = misc.imresize(img[:, :, 8:11], scale, interp='nearest').astype(
-        np.float64)
-    image[:, :, 11] = misc.imresize(img[:, :, 11], scale, interp='nearest').astype(np.float64)
-    image[:, :, 12] = misc.imresize(img[:, :, 12], scale, interp='nearest').astype(np.float64)
+    image[:, :, :3] = cv.resize(img[:, :, :3], 
+                                None, fx=scale, 
+                                fy=scale, 
+                                interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 3] = cv.resize(img[:, :, 3], 
+                               None, fx=scale,
+                               fy=scale,
+                               interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 4] = cv.resize(img[:, :, 4], 
+                               None, fx=scale, 
+                               fy=scale,
+                               interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 5:8] = cv.resize(img[:, :, 5:8],
+                                 None, fx=scale,
+                                 fy=scale,
+                                 interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 8:11] = cv.resize(img[:, :, 8:11], 
+                                  None, fx=scale,
+                                  fy=scale,
+                                  interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 11] = cv.resize(img[:, :, 11], 
+                                None, fx=scale,
+                                fy=scale, 
+                                interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 12] = cv.resize(img[:, :, 12], 
+                                None, fx=scale, 
+                                fy=scale,
+                                interpolation=cv.INTER_CUBIC).astype(np.float64)
     return image
 
 def batch_resize(img, deter_h, deter_w, channels):
@@ -158,17 +174,27 @@ def batch_resize(img, deter_h, deter_w, channels):
     '''
     image = np.zeros([deter_h, deter_w, channels])
     # try:
-    image[:, :, :3] = misc.imresize(img[:, :, :3].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
-        np.float64)
-    image[:, :, 3] = misc.imresize(img[:, :, 3].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
-        np.float64)
-    image[:, :, 4] = misc.imresize(img[:, :, 4].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
-        np.float64)
-    image[:, :, 5:8] = misc.imresize(img[:, :, 5:8].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(
-        np.float64)
-    image[:, :, 8:11] = misc.imresize(img[:, :, 8:11].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(np.float64)
-    image[:, :, 11] = misc.imresize(img[:, :, 11].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(np.float64)
-    image[:, :, 12] = misc.imresize(img[:, :, 12].astype(np.uint8), [deter_h, deter_w], interp='nearest').astype(np.float64)
+    image[:, :, :3] = cv.resize(img[:, :, :3], 
+                                (deter_w, deter_h), 
+                                interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 3] = cv.resize(img[:, :, 3], 
+                               (deter_w, deter_h), 
+                               interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 4] = cv.resize(img[:, :, 4], 
+                               (deter_w, deter_h), 
+                               interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 5:8] = cv.resize(img[:, :, 5:8], 
+                                 (deter_w, deter_h), 
+                                 interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 8:11] = cv.resize(img[:, :, 8:11], 
+                                  (deter_w, deter_h), 
+                                  interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 11] = cv.resize(img[:, :, 11], 
+                                (deter_w, deter_h), 
+                                interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:, :, 12] = cv.resize(img[:, :, 12], 
+                                (deter_w, deter_h), 
+                                interpolation=cv.INTER_CUBIC).astype(np.float64)
 
     return image
 
