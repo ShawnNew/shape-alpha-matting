@@ -776,7 +776,7 @@ layer {
   python_param {
     module: "overallLoss"
     layer: "EncoderDecoderLossLayer"
-    param_str: '{"epsilon": 1e-6,"w_l": 0.5}'
+    param_str: '{"epsilon": 1e-6,"w_a": 0.35,"w_c": 0.35,"w_g":0.3}'
   }
   loss_weight: 1
 }
@@ -790,7 +790,7 @@ layer {
   python_param {
     module: "overallLoss"
     layer: "EncoderDecoderLossLayer"
-    param_str: '{"epsilon": 1e-6,"w_l": 0.5}'
+    param_str: '{"epsilon": 1e-6,"w_a": 0.35,"w_c": 0.35,"w_g":0.3}'
   }
   loss_weight: 1
   include {
