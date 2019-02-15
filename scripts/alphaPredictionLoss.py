@@ -25,9 +25,11 @@ class AlphaPredictionLossLayer(caffe.Layer):
         self.pred = bottom[0].data[:,0,:,:]
         self.mask = bottom[1].data[:,0,:,:] / 255.
         self.alpha = bottom[1].data[:,1,:,:] / 255.
+        self.gradient = bottom[1].data[:,2,:,:] / 255.
         self.pred = np.reshape(self.pred, (-1, 1, self.shape[0], self.shape[1]))
         self.mask = np.reshape(self.mask, (-1, 1, self.shape[0], self.shape[1]))
         self.alpha = np.reshape(self.alpha, (-1, 1, self.shape[0], self.shape[1]))
+#        self.gradient = np.reshape(self.gradient, (-1, 1, self.shape[0], self.shape[1]))
         self.mask[self.mask == 0.] *= 0.
         self.mask[self.mask == 1.] *= 0.
         self.mask[self.mask != 0.] = 1.
@@ -50,7 +52,7 @@ class AlphaPredictionLossLayer(caffe.Layer):
 
     def alpha_prediction_loss(self, pred):
         # calculate alpha_prediction_loss here
-        self.diff = diff = (pred - self.alpha) * self.mask        
+        self.diff = diff = (pred - self.alpha) * self.mask
         return np.sum(diff**2) / \
                 (self.num_pixels + self.epsilon) / 2.
 

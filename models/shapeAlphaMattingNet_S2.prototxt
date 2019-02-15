@@ -9,9 +9,9 @@ layer {
   top: "tri-map"
   top: "gt"
   top: "gradient"
-  top: "roughness"
+#  top: "roughness"
   hdf5_data_param {
-    source: "/home/dl/harddisk/Datasets/adobe-h5/train.txt"
+    source: "/home/dl/harddisk/Datasets/adobe-coarse/train.txt"
     batch_size: 10
   }
   include {
@@ -25,10 +25,10 @@ layer {
   top: "tri-map"
   top: "gt"
   top: "gradient"
-  top: "roughness"
+#  top: "roughness"
   hdf5_data_param {
-    source: "/home/dl/harddisk/Datasets/adobe-h5/val.txt"
-    batch_size: 10
+    source: "/home/dl/harddisk/Datasets/adobe-coarse/val.txt"
+    batch_size: 4
   }
   include {
     phase: TEST
@@ -42,7 +42,7 @@ layer {
   bottom: "tri-map"
   bottom: "data"
   bottom: "gradient"
-  bottom: "roughness"
+#  bottom: "roughness"
   top: "train_data"
   type: "Concat"
   concat_param {
@@ -925,6 +925,7 @@ layer {
   type: "Concat"
   bottom: "tri-map"
   bottom: "gt"
+  bottom: "gradient"
   top: "y_true"
   concat_param {
     axis: 1

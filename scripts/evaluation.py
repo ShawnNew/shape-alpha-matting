@@ -15,7 +15,7 @@ class ShapeAlphaNetModel:
         self.net.blobs['data'].data[...] = data[:, :3, :, :]
         self.net.blobs['tri-map'].data[...] = data[:, 3, :, :]
         self.net.blobs['gradient'].data[...] = data[:, 4, :, :]
-        self.net.blobs['roughness'].data[...] = data[:, 5, :, :]
+#        self.net.blobs['roughness'].data[...] = data[:, 5, :, :]
         self.input_size_ = data[0][0].shape
     
     def predict_with_shape_data(self):

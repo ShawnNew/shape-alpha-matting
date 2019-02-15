@@ -1,4 +1,4 @@
-name: "ShapeDeepMattingNet_S2"
+name: "DeepMattingNet_S2"
 
 # --------------------------- Encoder Network --------------------
 # Input data is four or more channel, because add tri-map and other
@@ -9,7 +9,7 @@ layer {
   top: "tri-map"
   top: "gt"
   hdf5_data_param {
-    source: "/home/dl/harddisk/Datasets/adobe-h5/train.txt"
+    source: "/home/dl/harddisk/Datasets/adobe-coarse/train.txt"
     batch_size: 10
   }
   include {
@@ -23,7 +23,7 @@ layer {
   top: "tri-map"
   top: "gt"
   hdf5_data_param {
-    source: "/home/dl/harddisk/Datasets/adobe-h5/test.txt"
+    source: "/home/dl/harddisk/Datasets/adobe-coarse/test.txt"
     batch_size: 4
   }
   include {

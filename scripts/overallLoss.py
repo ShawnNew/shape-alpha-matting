@@ -29,9 +29,11 @@ class EncoderDecoderLossLayer(caffe.Layer):
         self.alpha = bottom[1].data[:,4,:,:] / 255.
         self.fg = bottom[1].data[:,5:8,:,:] / 255.
         self.bg = bottom[1].data[:,8:11,:,:] / 255.
+        self.gradient = bottom[1].data[:,11,:,:] / 255.
         self.pred = np.reshape(self.pred, (-1, 1, self.shape[0], self.shape[1]))
         self.mask = np.reshape(self.mask, (-1, 1, self.shape[0], self.shape[1]))
         self.alpha = np.reshape(self.alpha, (-1, 1, self.shape[0], self.shape[1]))
+        self.gradient = np.reshape(self.gradient, (-1, 1, self.shape[0], self.shape[1]))
         self.mask[self.mask == 0.] *= 0.
         self.mask[self.mask == 1.] *= 0.
         self.mask[self.mask != 0.] = 1.
@@ -54,15 +56,14 @@ class EncoderDecoderLossLayer(caffe.Layer):
 
     def alpha_prediction_loss(self, pred):
         # calculate alpha_prediction_loss here
-        self.diff_alpha_ = diff = (pred - self.alpha) * self.mask                         # 4*224*224
-        # self.diff_alpha_ = pred - self.alpha          
+        self.diff_alpha_ = diff = (pred - self.alpha) * self.mask
         return np.sum(diff**2) / \
                 (self.num_pixels + self.epsilon) / 2.
 
     def compositional_loss(self, pred):
         # calculate compositional_loss here
         self.color_pred = pred * self.fg + (1.0 - pred) * self.bg      # element-wise multiply to get color image
-        self.diff_comp_ = diff = (self.color_pred - self.color_img) * self.mask          # 3 channels
+        self.diff_comp_ = diff = (self.color_pred - self.color_img) * self.mask
         self.diff_comp_ = np.average(
             self.diff_comp_ * (self.fg-self.bg), axis=1)
         self.diff_comp_ = np.reshape(self.diff_comp_, (-1, 1, self.shape[0], self.shape[1]))   

@@ -38,20 +38,20 @@ if __name__ == "__main__":
                     np.asarray(Image.open(items[2])), \
                     [net_input_w, net_input_h], \
                     interp='nearest').astype(np.float64)
-            roughness = misc.imresize(np.asarray(
-                    Image.open(items[3])), \
-                    [net_input_w, net_input_h], \
-                    interp='nearest').astype(np.float64)
+#           roughness = misc.imresize(np.asarray(
+#                    Image.open(items[3])), \
+#                    [net_input_w, net_input_h], \
+#                    interp='nearest').astype(np.float64)
             gt = np.asarray(Image.open(items[4])).astype(np.float64)
             tri_map = np.expand_dims(tri_map, axis=2)
             gradient = np.expand_dims(gradient, axis=2)
-            roughness = np.expand_dims(roughness, axis=2)
+#            roughness = np.expand_dims(roughness, axis=2)
 
             original_shape = gt.shape
 
             # testing
             feed_data_ = np.concatenate(
-                [data, tri_map, gradient, roughness], axis=2)
+                [data, tri_map, gradient], axis=2)#, roughness], axis=2)
             feed_data_ = np.expand_dims(
                 np.transpose(feed_data_, (2, 0, 1)), axis=0)
             shape_model.feed_input_with_shape(feed_data_)
