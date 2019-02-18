@@ -96,7 +96,7 @@ class EncoderDecoderLossLayer(caffe.Layer):
         return loss_
 
 
-    def gradient_loss(self, pred):
+    def gradient_loss(self):
         diff_ = 0.5 * self.diff_alpha + 0.5 * self.diff_comp
         # compute loss
         loss_ = np.sum((diff_**2) * self.mask * self.gradient_map) /\
@@ -111,7 +111,7 @@ class EncoderDecoderLossLayer(caffe.Layer):
         # average the above two losses
         alpha_loss_ = self.alpha_prediction_loss(pred)
         comp_loss_ = self.compositional_loss(pred)
-        gradient_loss_ = self.gradient_loss(pred)
+        gradient_loss_ = self.gradient_loss()
         return self.weights["w_a"] * alpha_loss_ + \
                 self.weights["w_c"] * comp_loss_ +\
                 self.weights["w_g"] * gradient_loss_
