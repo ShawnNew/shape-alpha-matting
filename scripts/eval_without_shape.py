@@ -30,8 +30,9 @@ if __name__ == "__main__":
                     [net_input_w, net_input_h], \
                     interp='nearest').astype(np.float64)
             tri_map_original = np.asarray(Image.open(items[1]))
+            tri_map_enlarge = np.where(np.equal(tri_map_original, 255), 128, tri_map_original)
             tri_map = misc.imresize(
-                    tri_map_original, \
+                    tri_map_enlarge, \
                     [net_input_w, net_input_h], \
                     interp='nearest').astype(np.float64)
             gt = np.asarray(Image.open(items[4])).astype(np.float64)
@@ -52,7 +53,7 @@ if __name__ == "__main__":
                 pred, (original_shape[1], original_shape[0]), \
                 interpolation=cv2.INTER_CUBIC
             )
-            mse = compute_mse_loss(pred, gt, tri_map_original)
+            mse = compute_mse_loss(pred, gt, tri_map_enlarge)
             _mse += mse
             log.info("mse for %s is: %f"% (item_name, mse))
             output_img = Image.fromarray(pred).convert("L")

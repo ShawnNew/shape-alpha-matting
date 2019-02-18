@@ -63,12 +63,11 @@ class EncoderDecoderLossLayer(caffe.Layer):
             
             bottom[0].diff[...] = sign * _diff
     
-    @classmethod
     def alpha_prediction_loss(self, pred):
         # calculate alpha_prediction_loss here
         diff_ = pred - self.alpha
         # loss
-        loss_ = np.sum((diff**2) * self.mask) /\
+        loss_ = np.sum((diff_**2) * self.mask) /\
                  (2 * (self.num_pixels + self.epsilon))
         self.diff_alpha = diff_
         
@@ -78,24 +77,25 @@ class EncoderDecoderLossLayer(caffe.Layer):
 
     
     
-    @classmethod
     def compositional_loss(self, pred):
         # calculate compositional_loss here
         color_pred = pred * self.fg + (1.0 - pred) * self.bg      
         diff_ = color_pred - self.color_img
         diff_average = np.average(diff_, axis=1)   # average over color channel
+        diff_average = np.reshape(diff_average, (-1, 1, self.shape[0], self.shape[1]))
         # compute loss here
         loss_ = np.sum((diff_average**2) * self.mask) /\
                 (2 * (self.num_pixels + self.epsilon))
         self.diff_comp = diff_average
         
         # compute gradient here
-        self.grad_comp = np.average(diff_ * (self.fg-self.bg), axis=1) *\
-                         self.mask / len(self.pred)
+        grad_comp_ = np.average(diff_ * (self.fg-self.bg), axis=1)
+        grad_comp_ = np.reshape(grad_comp_, (-1, 1, self.shape[0], self.shape[1]))
+        self.grad_comp = grad_comp_ * self.mask /\
+                         len(self.pred)
         return loss_
 
 
-    @classmethod
     def gradient_loss(self, pred):
         diff_ = 0.5 * self.diff_alpha + 0.5 * self.diff_comp
         # compute loss
@@ -107,7 +107,6 @@ class EncoderDecoderLossLayer(caffe.Layer):
                 self.gradient_map
         return loss_
 
-    @classmethod
     def overall_loss(self, pred):                
         # average the above two losses
         alpha_loss_ = self.alpha_prediction_loss(pred)
