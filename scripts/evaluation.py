@@ -41,19 +41,25 @@ class alphaNetModel:
         self.net = caffe.Net(model, weights, caffe.TEST)
     
     def feed_input(self, data):
-        self.net.blobs['data'].data[...] = data[:, :3, :, :]
-        self.net.blobs['tri-map'].data[...] = data[:, 3, :, :]
-        self.input_size_ = data[0][0].shape
+        img = data[:3, :, :]
+        tri_map = np.expand_dims(data[3, :, :], axis=0)
+        self.net.blobs['data'].reshape(1, *img.shape)
+        self.net.blobs['tri-map'].reshape(1, *tri_map.shape)
+        self.net.blobs['data'].data[...] = img
+        self.net.blobs['tri-map'].data[...] = tri_map
+        # self.net.blobs['data'].data[...] = data[:, :3, :, :]
+        # self.net.blobs['tri-map'].data[...] = data[:, 3, :, :]
+        # self.input_size_ = data[0][0].shape
 
     def predict_without_shape_data(self):
         t_start = time.clock()
         self.net.forward()
         duration = time.clock() - t_start
         _output = self.net.blobs['alpha_output'].data * 255.
-        _output = np.reshape(_output, \
-                    (self.input_size_[0], self.input_size_[1])).astype(np.uint8)
+        # _output = np.reshape(_output, \
+        #             (self.input_size_[0], self.input_size_[1])).astype(np.uint8)
         raw_output = self.net.blobs['sigmoid_pred'].data * 255.
-        raw_output = np.reshape(raw_output, \
-                               (self.input_size_[0], self.input_size_[1])).astype(np.uint8)
+        # raw_output = np.reshape(raw_output, \
+        #                        (self.input_size_[0], self.input_size_[1])).astype(np.uint8)
         return duration, _output, raw_output
 
