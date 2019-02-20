@@ -13,7 +13,7 @@ layer {
 #  top: "roughness"
   hdf5_data_param {
     source: "/home/dl/harddisk/Datasets/adobe-coarse/train.txt"
-    batch_size: 10
+    batch_size: 4
   }
   include {
     phase: TRAIN
@@ -43,7 +43,7 @@ layer {
   name: "concat_train"
   bottom: "tri-map"
   bottom: "data"
-  bottom: "gradient"
+#  bottom: "gradient"
 #  bottom: "roughness"
   top: "train_data"
   type: "Concat"
@@ -496,7 +496,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 14
+    #unpool_size: 14
   }
 }
 layer {
@@ -542,7 +542,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 28
+    #unpool_size: 28
   }
 }
 layer {
@@ -588,7 +588,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 56
+    #unpool_size: 56
   }
 }
 layer {
@@ -634,7 +634,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 112
+    #unpool_size: 112
   }
 }
 layer {
@@ -680,7 +680,7 @@ layer {
     unpool: MAX
     kernel_size: 2
     stride: 2
-    unpool_size: 224
+    #unpool_size: 224
   }
 }
 layer {
@@ -774,7 +774,7 @@ layer {
   bottom: "sigmoid_pred"
   bottom: "y_true"
   python_param {
-    module: "overallLoss"
+    module: "overallGradientLoss"
     layer: "EncoderDecoderLossLayer"
     param_str: '{"epsilon": 1e-6,"w_a": 0.35,"w_c": 0.35,"w_g":0.3}'
   }

@@ -18,6 +18,7 @@ class EncoderDecoderLossLayer(caffe.Layer):
         w_ = {}
         w_["w_a"] = params["w_a"]
         w_["w_c"] = params["w_c"]
+        w_["w_g"] = params["w_g"]
         self.weights = w_
         self.epsilon = params["epsilon"]
         self.shape = bottom[0].data[0][0].shape
@@ -25,6 +26,7 @@ class EncoderDecoderLossLayer(caffe.Layer):
     def reshape(self, bottom, top):
         # reshape the inter-mediate data from the blobs here.
         # loss output is scalar
+        pdb.set_trace()
         top[0].reshape(1)
         # reshape the data
         self.pred = bottom[0].data[:,0,:,:]
@@ -33,9 +35,12 @@ class EncoderDecoderLossLayer(caffe.Layer):
         self.alpha = bottom[1].data[:,4,:,:] / 255.
         self.fg = bottom[1].data[:,5:8,:,:] / 255.
         self.bg = bottom[1].data[:,8:11,:,:] / 255.
+        gradient = bottom[1].data[:,11,:,:] / 255.
         self.pred = np.reshape(self.pred, (-1, 1, self.shape[0], self.shape[1]))
         mask_ = np.reshape(mask_, (-1, 1, self.shape[0], self.shape[1]))
         self.alpha = np.reshape(self.alpha, (-1, 1, self.shape[0], self.shape[1]))
+        gradient = np.reshape(gradient, (-1, 1, self.shape[0], self.shape[1]))
+        self.gradient_map = generate_gradient_map(gradient, 3)
         mask_[mask_ == 0.] *= 0.
         mask_[mask_ == 1.] *= 0.
         mask_[mask_ != 0.] = 1.
@@ -47,7 +52,8 @@ class EncoderDecoderLossLayer(caffe.Layer):
     
     def backward(self, top, propagate_down, bottom):
         _diff = self.weights["w_a"] * self.grad_alpha +\
-                self.weights["w_c"] * self.grad_comp
+                self.weights["w_c"] * self.grad_comp +\
+                self.weights["w_g"] * self.grad_grad
         for i in range(2):
             if not propagate_down[i]:
                 continue
@@ -91,9 +97,22 @@ class EncoderDecoderLossLayer(caffe.Layer):
         return loss_
 
 
+    def gradient_loss(self):
+        diff_ = 0.5 * self.diff_alpha + 0.5 * self.diff_comp
+        # compute loss
+        loss_ = np.sum((diff_**2) * self.mask * self.gradient_map) /\
+                (2 * (self.num_pixels + self.epsilon))
+        
+        # compute gradient
+        self.grad_grad = diff_ * (0.5 * self.grad_alpha + 0.5 * self.grad_comp) *\
+                self.gradient_map
+        return loss_
+
     def overall_loss(self, pred):                
         # average the above two losses
         alpha_loss_ = self.alpha_prediction_loss(pred)
         comp_loss_ = self.compositional_loss(pred)
+        gradient_loss_ = self.gradient_loss()
         return self.weights["w_a"] * alpha_loss_ + \
-                self.weights["w_c"] * comp_loss_
+                self.weights["w_c"] * comp_loss_ +\
+                self.weights["w_g"] * gradient_loss_

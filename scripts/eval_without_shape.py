@@ -46,21 +46,30 @@ if __name__ == "__main__":
             feed_data_ = np.expand_dims(
                 np.transpose(feed_data_, (2, 0, 1)), axis=0)
             _model.feed_input(feed_data_)
-            duration, pred = _model.predict_without_shape_data()
+            duration, pred, raw_output = _model.predict_without_shape_data()
             log.info("Processed %s, consumed %f second."% (item_name, duration))
             pred = np.where(np.equal(tri_map[:, :, 0], unknown_code), pred, tri_map[:, :, 0])
             pred = cv2.resize(
                 pred, (original_shape[1], original_shape[0]), \
                 interpolation=cv2.INTER_CUBIC
             )
+            raw_output = np.where(np.equal(tri_map[:,:,0], unknown_code), raw_output, tri_map[:,:,0])
+            raw_output = cv2.resize(
+                          raw_output, (original_shape[1], original_shape[0]), \
+                          interpolation=cv2.INTER_CUBIC)
             mse = compute_mse_loss(pred, gt, tri_map_enlarge)
             _mse += mse
             log.info("mse for %s is: %f"% (item_name, mse))
             output_img = Image.fromarray(pred).convert("L")
+            raw_output_img = Image.fromarray(raw_output).convert("L")
             output_dir = os.path.join("../", "test-output")
+            raw_output_dir = os.path.join("../", "raw-test-output")
+            if not os.path.exists(raw_output_dir): os.mkdir(raw_output_dir)
             if not os.path.exists(output_dir): os.mkdir(output_dir)
             output_filename = os.path.join(output_dir, item_name)
+            raw_output_filename = os.path.join(raw_output_dir, item_name)
             output_img.save(output_filename)
+            raw_output_img.save(raw_output_filename)
             time_ += duration
 
         _mse /= nums
