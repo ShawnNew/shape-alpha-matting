@@ -10,9 +10,10 @@ from utils import compute_mse_loss
 from config import shape_model, shape_weights, source
 from config import net_input_w, net_input_h
 from config import unknown_code
+import pdb
 
 if __name__ == "__main__":
-    shape_model = ShapeAlphaNetModel(shape_model, shape_weights, "gpu", 1)
+    shape_model = ShapeAlphaNetModel(shape_model, shape_weights, "gpu", 3)
     shape_mse = 0
     time_ = 0
     with open(source, 'r') as f:
@@ -30,8 +31,9 @@ if __name__ == "__main__":
                     [net_input_w, net_input_h], \
                     interp='nearest').astype(np.float64)
             tri_map_original = np.asarray(Image.open(items[1]))
+            tri_map_enlarge = np.where(np.equal(tri_map_original, 255), 128, tri_map_original)
             tri_map = misc.imresize(
-                    tri_map_original, \
+                    tri_map_enlarge, \
                     [net_input_w, net_input_h], \
                     interp='nearest').astype(np.float64)
             gradient = misc.imresize(

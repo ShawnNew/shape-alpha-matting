@@ -13,7 +13,7 @@ from config import unknown_code
 import pdb
 
 if __name__ == "__main__":
-    _model = alphaNetModel(_model, _weights, "gpu", 1)
+    _model = alphaNetModel(_model, _weights, "gpu", 3)
     _mse = 0
     time_ = 0
     with open(source, 'r') as f:
@@ -21,7 +21,6 @@ if __name__ == "__main__":
         nums = len(lines_)
         log.info("Starting processing.")
         for i, line_ in enumerate(lines_):
-            pdb.set_trace()
             base, _ = os.path.split(source)
             base += "/"
             items = line_.rstrip().replace("./", base).split(" ")
@@ -29,36 +28,37 @@ if __name__ == "__main__":
             # read images from datasets directory
             data = np.asarray(cv2.imread(items[6]))
             tri_map_original = np.asarray(Image.open(items[1]))
-            # data = misc.imresize(
-            #         data, \
-            #         [net_input_w, net_input_h], \
-            #         interp='nearest').astype(np.float64)
+            data = misc.imresize(
+                    data, \
+                    [net_input_w, net_input_h], \
+                    interp='nearest').astype(np.float64)
             tri_map_enlarge = np.where(np.equal(tri_map_original, 255), 128, tri_map_original)
-            # tri_map = misc.imresize(
-            #         tri_map_enlarge, \
-            #         [net_input_w, net_input_h], \
-            #         interp='nearest').astype(np.float64)
+            tri_map = misc.imresize(
+                    tri_map_enlarge, \
+                    [net_input_w, net_input_h], \
+                    interp='nearest').astype(np.float64)
             gt = np.asarray(Image.open(items[4])).astype(np.float64)
-            tri_map = np.expand_dims(tri_map_enlarge, axis=2)
+            tri_map = np.expand_dims(tri_map, axis=2)
 
             original_shape = gt.shape
 
             # testing
             feed_data_ = np.concatenate([data, tri_map], axis=2)
             feed_data_ = np.transpose(feed_data_, (2, 0, 1))
+            feed_data_ = np.expand_dims(feed_data_, axis=0)
             _model.feed_input(feed_data_)
             duration, pred, raw_output = _model.predict_without_shape_data()
             log.info("Processed %s, consumed %f second."% (item_name, duration))
-            pred = np.where(np.equal(tri_map[:, :, 0], unknown_code), pred, tri_map[:, :, 0])
+            pred = np.where(np.equal(tri_map_enlarge, unknown_code), pred, tri_map_enlarge)
             pred = cv2.resize(
                 pred, (original_shape[1], original_shape[0]), \
                 interpolation=cv2.INTER_CUBIC
             )
-            raw_output = np.where(np.equal(tri_map[:,:,0], unknown_code), raw_output, tri_map[:,:,0])
+            raw_output = np.where(np.equal(tri_map_enlarge, unknown_code), raw_output, tri_map_enlarge)
             raw_output = cv2.resize(
                           raw_output, (original_shape[1], original_shape[0]), \
                           interpolation=cv2.INTER_CUBIC)
-            mse = compute_mse_loss(pred, gt, tri_map_enlarge)
+            mse = compute_mse_loss(pred, gt, tri_map_original)
             _mse += mse
             log.info("mse for %s is: %f"% (item_name, mse))
             output_img = Image.fromarray(pred).convert("L")

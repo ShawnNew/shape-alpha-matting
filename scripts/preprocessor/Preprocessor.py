@@ -5,10 +5,11 @@ import numpy as np
 from PIL import Image
 import sys
 from utils import *
+import pdb
 
 class Preprocessor:
     # class member
-    channels = 13 # the total channel number of the dataset
+    channels = 14 # the total channel number of the dataset
     random_crop_list_ = [320, 480, 640]
     flip_list_ = [True, False]
     
@@ -119,14 +120,15 @@ class Preprocessor:
 
                     # make foreground to unknown
                     tri_map = np.where(np.equal(raw_tri_map_, 255), 128, raw_tri_map_) 
-                   
+ 
                     sample_array = np.concatenate([raw_img_, \
                                                 np.expand_dims(tri_map, axis=2), \
                                                 np.expand_dims(raw_gt_, axis=2), \
                                                 raw_fg_, \
                                                 raw_bg_, \
                                                 np.expand_dims(raw_gradient_, axis=2), \
-                                                np.expand_dims(raw_roughness_, axis=2)
+                                                np.expand_dims(raw_roughness_, axis=2), \
+                                                np.expand_dims(raw_tri_map_, axis=2)
                                                 ], axis=2).astype(np.float64)
                     sample_array = self.imgCropper(sample_array, \
                                                 self.img_size_)
@@ -158,7 +160,7 @@ class Preprocessor:
         random_cropsize = random.choice(self.random_crop_list_)
         trimap = img[:, :, 3]
         original_shape = trimap.shape
-      
+
         if (min(original_shape[0], original_shape[1]) < random_cropsize):
             minimal = min(original_shape[0], original_shape[1])
             scale_ = math.ceil(float(random_cropsize) / float(minimal))

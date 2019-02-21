@@ -7,19 +7,19 @@ layer {
   name: "image"
   type: "Input"
   top: "data"
-  input_param {shape: {dim: 1 dim: 3 dim: 224 dim: 224}}
+  input_param {shape: {dim: 1 dim: 3 dim: 896 dim: 896}}
 }
 layer {
   name: "trimap"
   type: "Input"
   top: "tri-map"
-  input_param {shape: {dim: 1 dim: 1 dim: 224 dim: 224}}
+  input_param {shape: {dim: 1 dim: 1 dim: 896 dim: 896}}
 }
 layer {
   name: "gradient"
   type: "Input"
   top: "gradient"
-  input_param {shape: {dim: 1 dim: 1 dim: 224 dim: 224}}
+  input_param {shape: {dim: 1 dim: 1 dim: 896 dim: 896}}
 }
 #layer {
 #  name: "roughness"
