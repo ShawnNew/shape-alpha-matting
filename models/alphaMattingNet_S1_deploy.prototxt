@@ -1,4 +1,4 @@
-name: "ShapeDeepMattingNet_Deploy"
+name: "DeepMattingNet_Deploy"
 
 # --------------------------- Encoder Network --------------------
 # Input data is four or more channel, because add tri-map and other
@@ -15,19 +15,12 @@ layer {
   top: "tri-map"
   input_param {shape: {dim: 1 dim: 1 dim: 960 dim: 960}}
 }
-layer {
-  name: "gradient"
-  type: "Input"
-  top: "gradient"
-  input_param {shape: {dim: 1 dim: 1 dim: 960 dim: 960}}
-}
 
 # Add concat layer to concat tri-map and raw images.
 layer {
   name: "concat_train"
   bottom: "tri-map"
   bottom: "data"
-  bottom: "gradient"
   top: "train_data"
   type: "Concat"
   concat_param {
@@ -740,165 +733,4 @@ layer {
 }
 
 
-# ---------------------------- Refine net ---------------------------
-# Scale the output of the decoder before passing to refine net
-layer {
-  name: "scaledDecoder"
-  type: "Scale"
-  bottom: "sigmoid_pred"
-  top: "scaled_decoder"
-  scale_param {
-    filler {
-      value: 255
-    }
-    bias_term: false
-  }
-}
-layer {
-  name: "refine_concat"
-  bottom: "scaled_decoder"
-  bottom: "data"
-  top: "refine_data"
-  type: "Concat"
-  concat_param {
-    axis: 1
-  }
-}
-layer {
-  name: "refine_conv_1"
-  bottom: "refine_data"
-  top: "refine_conv_1"
-  type: "Convolution"
-  param {
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 20
-    decay_mult: 0
-  }
-  convolution_param {
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-    num_output: 64
-    pad: 1
-    kernel_size: 3
-  }
-}
-layer {
-  name: "refine_relu_1"
-  bottom: "refine_conv_1"
-  top: "refine_conv_1"
-  type: "ReLU"
-}
-layer {
-  name: "refine_conv_2"
-  bottom: "refine_conv_1"
-  top: "refine_conv_2"
-  type: "Convolution"
-  param {
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 20
-    decay_mult: 0
-  }
-  convolution_param {
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-    num_output: 64
-    pad: 1
-    kernel_size: 3
-  }
-}
-layer {
-  name: "refine_relu_2"
-  bottom: "refine_conv_2"
-  top: "refine_conv_2"
-  type: "ReLU"
-}
-layer {
-  name: "refine_conv_3"
-  bottom: "refine_conv_2"
-  top: "refine_conv_3"
-  type: "Convolution"
-  param {
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 20
-    decay_mult: 0
-  }
-  convolution_param {
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-    num_output: 64
-    pad: 1
-    kernel_size: 3
-  }
-}
-layer {
-  name: "refine_relu_3"
-  bottom: "refine_conv_3"
-  top: "refine_conv_3"
-  type: "ReLU"
-}
 
-layer {
-  name: "refine_output"
-  bottom: "refine_conv_3"
-  top: "refine_output"
-  type: "Convolution"
-  param {
-    lr_mult: 10
-    decay_mult: 1
-  }
-  param {
-    lr_mult: 20
-    decay_mult: 1
-  }
-  convolution_param {
-    weight_filler {
-      type: "xavier"
-    }
-    bias_filler {
-      type: "constant"
-      value: 0
-    }
-    num_output: 1
-    pad: 1
-    kernel_size: 3
-  }
-}
-layer {
-  name: "refine_sigmoid_output"
-  bottom: "refine_output"
-  top: "refine_output"
-  type: "Sigmoid"
-}
-
-layer {
-  name: "skip_model"
-  bottom: "refine_output"
-  bottom: "sigmoid_pred"
-  top: "alpha_output"
-  type: "Eltwise"
-  eltwise_param {operation:SUM}
-}

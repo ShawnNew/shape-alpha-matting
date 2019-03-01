@@ -23,12 +23,12 @@ class ShapeAlphaNetModel:
         self.net.forward()
         duration = time.clock() - t_start
         raw_shape_output = self.net.blobs['sigmoid_pred'].data * 255.
-        shape_output = self.net.blobs['alpha_output'].data * 255.
+        #shape_output = self.net.blobs['alpha_output'].data * 255.
         #shape_output = np.reshape(shape_output, \
         #                (self.input_size_[0], self.input_size_[1])).astype(np.uint8)
         #raw_shape_output = np.reshape(raw_shape_output, \
         #                   (self.input_size_[0], self.input_size_[1])).astype(np.uint8)
-        return duration, shape_output[0][0], raw_shape_output[0][0]
+        return duration, raw_shape_output[0][0]
 
 
 class alphaNetModel:
@@ -51,11 +51,11 @@ class alphaNetModel:
         t_start = time.clock()
         self.net.forward()
         duration = time.clock() - t_start
-        _output = self.net.blobs['alpha_output'].data * 255.
+        #_output = self.net.blobs['alpha_output'].data * 255.
         # _output = np.reshape(_output, \
         #             (self.input_size_[0], self.input_size_[1])).astype(np.uint8)
         raw_output = self.net.blobs['sigmoid_pred'].data * 255.
         # raw_output = np.reshape(raw_output, \
         #                        (self.input_size_[0], self.input_size_[1])).astype(np.uint8)
-        return duration, _output[0][0], raw_output[0][0]
+        return duration, raw_output[0][0]
 

@@ -12,7 +12,7 @@ parser.add_argument("-d", "--directory", \
                     help="Please specify the directory of the images dataset.")
 parser.add_argument("-o", "--output", \
                     type=str, \
-                    default="/home/dl/harddisk/Datasets/adobe-h5", \
+                    default="/home/dl/harddisk/Datasets/adobe-coarse", \
                     help="Please specify the directory of the output.")
 parser.add_argument("-s", "--size", \
                     type=int, \

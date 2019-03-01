@@ -9,8 +9,9 @@ layer {
   top: "gt"
   top: "fg"
   top: "bg"
+#  top: "tri-map-origin"
   hdf5_data_param {
-    source: "/home/dl/harddisk/Datasets/adobe-coarse/train.txt"
+    source: "/home/dl/harddisk/Datasets/adobe-h5/train.txt"
     batch_size: 10
   }
   include {
@@ -25,8 +26,9 @@ layer {
   top: "gt"
   top: "fg"
   top: "bg"
+#  top: "tri-map-origin"
   hdf5_data_param {
-    source: "/home/dl/harddisk/Datasets/adobe-coarse/val.txt"
+    source: "/home/dl/harddisk/Datasets/adobe-h5/val.txt"
     batch_size: 4
   }
   include {
@@ -770,7 +772,7 @@ layer {
   python_param {
     module: "overallLoss"
     layer: "EncoderDecoderLossLayer"
-    param_str: '{"epsilon": 1e-6,"w_a": 0.35,"w_c": 0.35,"w_g":0.3}'
+    param_str: '{"epsilon": 1e-6,"w_a": 0.5,"w_c": 0.5}'
   }
   loss_weight: 1
 }
@@ -784,7 +786,7 @@ layer {
   python_param {
     module: "overallLoss"
     layer: "EncoderDecoderLossLayer"
-    param_str: '{"epsilon": 1e-6,"w_a": 0.35,"w_c": 0.35,"w_g":0.3}'
+    param_str: '{"epsilon": 1e-6,"w_a": 0.5,"w_c": 0.5}'
   }
   loss_weight: 1
   include {

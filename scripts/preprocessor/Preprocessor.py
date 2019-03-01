@@ -120,7 +120,7 @@ class Preprocessor:
 
                     # make foreground to unknown
                     tri_map = np.where(np.equal(raw_tri_map_, 255), 128, raw_tri_map_) 
- 
+                    
                     sample_array = np.concatenate([raw_img_, \
                                                 np.expand_dims(tri_map, axis=2), \
                                                 np.expand_dims(raw_gt_, axis=2), \
@@ -136,7 +136,6 @@ class Preprocessor:
                     if flip:
                         sample_array = sample_array[:, ::-1, :]
                     data[sample_count_] = np.transpose(sample_array, (2, 0, 1)) * scale
-
 
                     print "Processed %d samples"% int(i+1)
                     if sample_count_+1 == self.samples_: # write SAMPLES images into hdf5 file
@@ -158,14 +157,14 @@ class Preprocessor:
 
     def imgCropper(self, img, output_size):
         random_cropsize = random.choice(self.random_crop_list_)
-        trimap = img[:, :, 3]
+        trimap = img[:, :, 13]
         original_shape = trimap.shape
 
         if (min(original_shape[0], original_shape[1]) < random_cropsize):
             minimal = min(original_shape[0], original_shape[1])
             scale_ = math.ceil(float(random_cropsize) / float(minimal))
             img = batch_resize_by_scale(img, scale_, self.channels)
-            trimap = img[:, :, 3]
+            trimap = img[:, :, 13]
         
         h_s, h_e, w_s, w_e = validUnknownRegion(trimap, random_cropsize)
         crop_img = img[h_s:h_e, w_s:w_e, :] # crop

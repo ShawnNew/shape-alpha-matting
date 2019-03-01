@@ -10,10 +10,10 @@ layer {
   top: "fg"
   top: "bg"
   top: "gradient"
-#  top: "roughness"
+#  top: "tri-map-origin"
   hdf5_data_param {
-    source: "/home/dl/harddisk/Datasets/adobe-coarse/train.txt"
-    batch_size: 4
+    source: "/home/dl/harddisk/Datasets/adobe-h5/train.txt"
+    batch_size: 10
   }
   include {
     phase: TRAIN
@@ -28,9 +28,9 @@ layer {
   top: "fg"
   top: "bg"
   top: "gradient"
-#  top: "roughness"
+#  top: "tri-map-origin"
   hdf5_data_param {
-    source: "/home/dl/harddisk/Datasets/adobe-coarse/val.txt"
+    source: "/home/dl/harddisk/Datasets/adobe-h5/val.txt"
     batch_size: 4
   }
   include {
@@ -43,8 +43,7 @@ layer {
   name: "concat_train"
   bottom: "tri-map"
   bottom: "data"
-#  bottom: "gradient"
-#  bottom: "roughness"
+  bottom: "gradient"
   top: "train_data"
   type: "Concat"
   concat_param {
@@ -774,8 +773,8 @@ layer {
   bottom: "sigmoid_pred"
   bottom: "y_true"
   python_param {
-    module: "overallGradientLoss"
-    layer: "EncoderDecoderLossLayer"
+    module: "overallLoss"
+    layer: "EncoderDecoderWithGradientLossLayer"
     param_str: '{"epsilon": 1e-6,"w_a": 0.35,"w_c": 0.35,"w_g":0.3}'
   }
   loss_weight: 1
@@ -790,7 +789,7 @@ layer {
   python_param {
     module: "overallLoss"
     layer: "EncoderDecoderLossLayer"
-    param_str: '{"epsilon": 1e-6,"w_a": 0.35,"w_c": 0.35,"w_g":0.3}'
+    param_str: '{"epsilon": 1e-6,"w_a": 0.5,"w_c": 0.5,"w_g":0.3}'
   }
   loss_weight: 1
   include {

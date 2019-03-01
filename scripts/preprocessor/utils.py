@@ -161,6 +161,10 @@ def batch_resize_by_scale(img, scale, channels):
                                 None, fx=scale, 
                                 fy=scale,
                                 interpolation=cv.INTER_CUBIC).astype(np.float64)
+    image[:,:,13] = cv.resize(img[:,:,13],
+                              None, fx=scale,
+                              fy=scale,
+                              interpolation=cv.INTER_CUBIC).astype(np.float64)
     return image
 
 def batch_resize(img, deter_h, deter_w, channels):
@@ -193,7 +197,9 @@ def batch_resize(img, deter_h, deter_w, channels):
     image[:, :, 12] = cv.resize(img[:, :, 12], 
                                 (deter_w, deter_h), 
                                 interpolation=cv.INTER_CUBIC).astype(np.float64)
-
+    image[:, :, 13] = cv.resize(img[:, :, 13], 
+                                (deter_w, deter_h), 
+                                interpolation=cv.INTER_CUBIC).astype(np.float64)
     return image
 
 

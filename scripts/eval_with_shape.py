@@ -13,8 +13,9 @@ from config import unknown_code
 import pdb
 
 if __name__ == "__main__":
-    shape_model = ShapeAlphaNetModel(shape_model, shape_weights, "gpu", 3)
-    shape_mse = 0
+    shape_model = ShapeAlphaNetModel(shape_model, shape_weights, "gpu", 2)
+    #shape_mse = 0
+    raw_mse = 0
     time_ = 0
     with open(source, 'r') as f:
         lines_ = f.readlines()
@@ -40,14 +41,9 @@ if __name__ == "__main__":
                     np.asarray(Image.open(items[2])), \
                     [net_input_w, net_input_h], \
                     interp='nearest').astype(np.float64)
-#           roughness = misc.imresize(np.asarray(
-#                    Image.open(items[3])), \
-#                    [net_input_w, net_input_h], \
-#                    interp='nearest').astype(np.float64)
             gt = np.asarray(Image.open(items[4])).astype(np.float64)
             tri_map = np.expand_dims(tri_map, axis=2)
             gradient = np.expand_dims(gradient, axis=2)
-#            roughness = np.expand_dims(roughness, axis=2)
 
             original_shape = gt.shape
 
@@ -57,35 +53,39 @@ if __name__ == "__main__":
             feed_data_ = np.expand_dims(
                 np.transpose(feed_data_, (2, 0, 1)), axis=0)
             shape_model.feed_input_with_shape(feed_data_)
-            duration, pred, raw_output = shape_model.predict_with_shape_data()
+            duration, raw_output = shape_model.predict_with_shape_data()
             log.info("Processed %s, consumed %f second."% (item_name, duration))
-            pred = np.where(np.equal(tri_map[:, :, 0], unknown_code), pred, tri_map[:, :, 0])
-            pred = cv2.resize(
-                pred, (original_shape[1], original_shape[0]), \
-                interpolation=cv2.INTER_CUBIC
-            )
+            #pred = np.where(np.equal(tri_map[:, :, 0], unknown_code), pred, tri_map[:, :, 0])
+            #pred = cv2.resize(
+            #    pred, (original_shape[1], original_shape[0]), \
+            #    interpolation=cv2.INTER_CUBIC
+            #)
             raw_output = np.where(
                                  np.equal(tri_map[:,:,0], unknown_code),\
                                  raw_output, tri_map[:,:,0])
             raw_output = cv2.resize(
                                    raw_output, (original_shape[1], original_shape[0]), \
                                    interpolation=cv2.INTER_CUBIC)
-            mse = compute_mse_loss(pred, gt, tri_map_original)
-            shape_mse += mse
+            #mse = compute_mse_loss(pred, gt, tri_map_enlarge)
+            #shape_mse += mse
+            mse = compute_mse_loss(raw_output, gt, tri_map_enlarge)
+            raw_mse += mse
             log.info("mse for %s is: %f"% (item_name, mse))
-            output_img = Image.fromarray(pred).convert("L")
-            output_dir = os.path.join("../", "shape-test-output")
+            #output_img = Image.fromarray(pred).convert("L")
+            #output_dir = os.path.join("../", "shape-test-output")
             raw_output_img = Image.fromarray(raw_output).convert("L")
-            raw_output_dir = os.path.join("../", "raw-shape-test-output")
-            if not os.path.exists(output_dir): os.mkdir(output_dir)
+            raw_output_dir = os.path.join("../", "shape-test-output")
+            #if not os.path.exists(output_dir): os.mkdir(output_dir)
             if not os.path.exists(raw_output_dir): os.mkdir(raw_output_dir)
-            output_filename = os.path.join(output_dir, item_name)
-            output_img.save(output_filename)
+            #output_filename = os.path.join(output_dir, item_name)
+            #output_img.save(output_filename)
             raw_output_filename = os.path.join(raw_output_dir, item_name)
             raw_output_img.save(raw_output_filename)
             time_ += duration
 
-        shape_mse /= nums
+        #shape_mse /= nums
+        raw_mse /= nums
         log.info("Mean time consumption every single image is: %f"% (time_ / nums))
-        log.info("Mean mse is: %f"% shape_mse)
+        log.info("Mean mse of raw alpha is: %f"% raw_mse)
+        #log.info("Mean mse of refiner is: %f"% shape_mse)
             

@@ -9,7 +9,7 @@ layer {
   top: "tri-map"
   top: "gt"
   top: "gradient"
-#  top: "roughness"
+  top: "tri-map-origin"
   hdf5_data_param {
     source: "/home/dl/harddisk/Datasets/adobe-coarse/train.txt"
     batch_size: 10
@@ -25,7 +25,7 @@ layer {
   top: "tri-map"
   top: "gt"
   top: "gradient"
-#  top: "roughness"
+  top: "tri-map-origin"
   hdf5_data_param {
     source: "/home/dl/harddisk/Datasets/adobe-coarse/val.txt"
     batch_size: 4
@@ -41,8 +41,7 @@ layer {
   name: "concat_train"
   bottom: "tri-map"
   bottom: "data"
-#  bottom: "gradient"
-#  bottom: "roughness"
+  bottom: "gradient"
   top: "train_data"
   type: "Concat"
   concat_param {
@@ -923,7 +922,7 @@ layer {
 layer {
   name: "concat_y_true"
   type: "Concat"
-  bottom: "tri-map"
+  bottom: "tri-map-origin"
   bottom: "gt"
   bottom: "gradient"
   top: "y_true"
@@ -939,8 +938,8 @@ layer {
   bottom: "y_true"
   python_param {
     module: "alphaPredictionLoss"
-    layer: "AlphaPredictionLossLayer"
-    param_str: '{"epsilon": 1e-6}'
+    layer: "AlphaPredictionWithGradientLossLayer"
+    param_str: '{"epsilon": 1e-6,"w_a": 1.0,"w_g":0.3}'
   }
   loss_weight: 1
 }
@@ -953,7 +952,7 @@ layer {
   python_param {
     module: "alphaPredictionLoss"
     layer: "AlphaPredictionLossLayer"
-    param_str: '{"epsilon": 1e-6}'
+    param_str: '{"epsilon": 1e-6,"w_a": 1.0,"w_g": 0.3}'
   }
   loss_weight: 1
   include {

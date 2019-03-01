@@ -8,6 +8,7 @@ layer {
   top: "data"
   top: "tri-map"
   top: "gt"
+  top: "tri-map-origin"
   hdf5_data_param {
     source: "/home/dl/harddisk/Datasets/adobe-coarse/train.txt"
     batch_size: 10
@@ -22,6 +23,7 @@ layer {
   top: "data"
   top: "tri-map"
   top: "gt"
+  top: "tri-map-origin"
   hdf5_data_param {
     source: "/home/dl/harddisk/Datasets/adobe-coarse/test.txt"
     batch_size: 4
@@ -916,7 +918,7 @@ layer {
 layer {
   name: "concat_y_true"
   type: "Concat"
-  bottom: "tri-map"
+  bottom: "tri-map-origin"
   bottom: "gt"
   top: "y_true"
   concat_param {
