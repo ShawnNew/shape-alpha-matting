@@ -14,17 +14,38 @@ def writeH5Files(samples_array, file_path):
     dir_, _ = os.path.split(file_path)
     if not os.path.exists(dir_): os.mkdir(dir_)
     hdf_file = h5py.File(file_path, 'w')
-    hdf_file['data'] = samples_array[:, :3, :, :] 
-    hdf_file['tri-map'] = np.expand_dims(samples_array[:, 3, :, :], axis=1) 
-    hdf_file['gt'] = np.expand_dims(samples_array[:, 4, :, :], axis=1)
-    hdf_file['fg'] = samples_array[:, 5:8, :, :]
-    hdf_file['bg'] = samples_array[:, 8:11, :, :]
-    hdf_file['gradient'] = np.expand_dims(samples_array[:, 11, :, :], axis=1)
-    hdf_file['roughness'] = np.expand_dims(samples_array[:, 12, :, :], axis=1)
-    hdf_file['tri-map-origin'] = np.expand_dims(samples_array[:,13, :, :], axis=1)
+    img = samples_array[:,:3,:,:]
+    img_scale1 = scale_by_factor(img, 0.5)
+    img_scale2 = scale_by_factor(img, 0.25)
+    tri_map = np.expand_dims(samples_array[:,3,:,:], axis=1)
+    gt = np.expand_dims(samples_array[:, 4, :, :], axis=1)
+    #fg = samples_array[:, 5:8, :, :]
+    #bg = samples_array[:, 8:11, :, :]
+    gradient = np.expand_dims(samples_array[:, 11, :, :], axis=1)
+    #roughness = np.expand_dims(samples_array[:, 12, :, :], axis=1)
+    tri_map_original = np.expand_dims(samples_array[:,13, :, :], axis=1)
+    hdf_file['img'] = img
+    hdf_file['img-scale1'] = img_scale1
+    hdf_file['img-scale2'] = img_scale2
+    hdf_file['tri-map'] = tri_map
+    hdf_file['gt'] = gt
+    #hdf_file['fg'] = fg
+    #hdf_file['bg'] = bg
+    hdf_file['gradient'] = gradient
+    #hdf_file['roughness'] = roughness
+    hdf_file['tri-map-origin'] = tri_map_original
     hdf_file.flush()
     hdf_file.close()
 
+def scale_by_factor(data, scale):
+    res = np.zeros((data.shape[0], data.shape[1], int(data.shape[2]*scale), int(data.shape[3]*scale)))
+    for i in range(len(data)):
+        img = data[i]
+        img = np.transpose(img, (1,2,0))
+        scale_ = cv.resize(img, (0,0), fx=scale, fy=scale)
+        scale_ = np.transpose(scale_, (2,0,1))
+        res[i] = scale_
+    return res
 
 def writeH5TxtFile(_dir):
     """
@@ -65,15 +86,15 @@ def getFileList(base, sub):
             path_ = os.path.join(path_, f)
             # add image file into list
             fileList.append(path_)
-    return fileList  
+    return fileList
 
 
 def candidateUnknownRegion(img):
     '''
     Propose a condidate of unknown region center randomly within the unknown area of img.
-    param: 
+    param:
         img: trimap image
-    return: 
+    return:
         an index for unknown region
     '''
     index = np.where(img == 128)
@@ -133,32 +154,32 @@ def batch_resize_by_scale(img, scale, channels):
     shape_ = img.shape
     image = np.zeros([shape_[0]*int(scale), shape_[1]*int(scale), channels])
     # try:
-    image[:, :, :3] = cv.resize(img[:, :, :3], 
-                                None, fx=scale, 
-                                fy=scale, 
+    image[:, :, :3] = cv.resize(img[:, :, :3],
+                                None, fx=scale,
+                                fy=scale,
                                 interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 3] = cv.resize(img[:, :, 3], 
+    image[:, :, 3] = cv.resize(img[:, :, 3],
                                None, fx=scale,
                                fy=scale,
                                interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 4] = cv.resize(img[:, :, 4], 
-                               None, fx=scale, 
+    image[:, :, 4] = cv.resize(img[:, :, 4],
+                               None, fx=scale,
                                fy=scale,
                                interpolation=cv.INTER_CUBIC).astype(np.float64)
     image[:, :, 5:8] = cv.resize(img[:, :, 5:8],
                                  None, fx=scale,
                                  fy=scale,
                                  interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 8:11] = cv.resize(img[:, :, 8:11], 
+    image[:, :, 8:11] = cv.resize(img[:, :, 8:11],
                                   None, fx=scale,
                                   fy=scale,
                                   interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 11] = cv.resize(img[:, :, 11], 
+    image[:, :, 11] = cv.resize(img[:, :, 11],
                                 None, fx=scale,
-                                fy=scale, 
+                                fy=scale,
                                 interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 12] = cv.resize(img[:, :, 12], 
-                                None, fx=scale, 
+    image[:, :, 12] = cv.resize(img[:, :, 12],
+                                None, fx=scale,
                                 fy=scale,
                                 interpolation=cv.INTER_CUBIC).astype(np.float64)
     image[:,:,13] = cv.resize(img[:,:,13],
@@ -176,29 +197,29 @@ def batch_resize(img, deter_h, deter_w, channels):
     '''
     image = np.zeros([deter_h, deter_w, channels])
     # try:
-    image[:, :, :3] = cv.resize(img[:, :, :3], 
-                                (deter_w, deter_h), 
+    image[:, :, :3] = cv.resize(img[:, :, :3],
+                                (deter_w, deter_h),
                                 interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 3] = cv.resize(img[:, :, 3], 
-                               (deter_w, deter_h), 
+    image[:, :, 3] = cv.resize(img[:, :, 3],
+                               (deter_w, deter_h),
                                interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 4] = cv.resize(img[:, :, 4], 
-                               (deter_w, deter_h), 
+    image[:, :, 4] = cv.resize(img[:, :, 4],
+                               (deter_w, deter_h),
                                interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 5:8] = cv.resize(img[:, :, 5:8], 
-                                 (deter_w, deter_h), 
+    image[:, :, 5:8] = cv.resize(img[:, :, 5:8],
+                                 (deter_w, deter_h),
                                  interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 8:11] = cv.resize(img[:, :, 8:11], 
-                                  (deter_w, deter_h), 
+    image[:, :, 8:11] = cv.resize(img[:, :, 8:11],
+                                  (deter_w, deter_h),
                                   interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 11] = cv.resize(img[:, :, 11], 
-                                (deter_w, deter_h), 
+    image[:, :, 11] = cv.resize(img[:, :, 11],
+                                (deter_w, deter_h),
                                 interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 12] = cv.resize(img[:, :, 12], 
-                                (deter_w, deter_h), 
+    image[:, :, 12] = cv.resize(img[:, :, 12],
+                                (deter_w, deter_h),
                                 interpolation=cv.INTER_CUBIC).astype(np.float64)
-    image[:, :, 13] = cv.resize(img[:, :, 13], 
-                                (deter_w, deter_h), 
+    image[:, :, 13] = cv.resize(img[:, :, 13],
+                                (deter_w, deter_h),
                                 interpolation=cv.INTER_CUBIC).astype(np.float64)
     return image
 

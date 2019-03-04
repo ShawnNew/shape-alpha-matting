@@ -6,13 +6,13 @@ layer {
   top: "img"
   top: "img-scale1"
   top: "img-scale2"
-  top: "tri-map"
+#  top: "tri-map"
   top: "gt"
 #  top: "fg"
 #  top: "bg"
   hdf5_data_param {
-    source: "/home/dl/harddisk/Datasets/adobe-h5/train.txt"
-    batch_size: 4
+    source: "/home/dl/harddisk/Datasets/adobe-test/train.txt"
+    batch_size: 1
   }
   include {
     phase: TRAIN
@@ -21,16 +21,16 @@ layer {
 
 layer {
   type: "HDF5Data"
+  top: "img"
   top: "img-scale1"
   top: "img-scale2"
-  top: "img-scale3"
-  top: "tri-map"
+#  top: "tri-map"
   top: "gt"
 #  top: "fg"
 #  top: "bg"
   hdf5_data_param {
-    source: "/home/dl/harddisk/Datasets/adobe-h5/val.txt"
-    batch_size: 4
+    source: "/home/dl/harddisk/Datasets/adobe-test/val.txt"
+    batch_size: 1
   }
   include {
     phase: TEST
@@ -41,7 +41,7 @@ layer {
 # --------- Scale3 head ----------
 
 layer {
-  bottom: "img-scale3"
+  bottom: "img-scale2"
   top: "head_scale3"
   name: "head_conv_scale3"
   type: "Convolution"
@@ -70,7 +70,7 @@ layer {
 }
 
 layer {
-  bottom: "conv3_1"
+  bottom: "head_scale3"
   top: "head_scale3"
   name: "relu_scale3_1"
   type: "ReLU"
@@ -1114,7 +1114,7 @@ layer {
   name: "res_scale3_12"
   type: "Eltwise"
   bottom: "res_scale3_11"
-  bottom: "res_scale3_12"
+  bottom: "res_scale3_12b"
   top: "res_scale3_12"
 }
 
@@ -1189,7 +1189,7 @@ layer {
   name: "res_scale3_13"
   type: "Eltwise"
   bottom: "res_scale3_12"
-  bottom: "res_scale3_13"
+  bottom: "res_scale3_13b"
   top: "res_scale3_13"
 }
 
@@ -1264,7 +1264,7 @@ layer {
   name: "res_scale3_14"
   type: "Eltwise"
   bottom: "res_scale3_13"
-  bottom: "res_scale3_14"
+  bottom: "res_scale3_14b"
   top: "res_scale3_14"
 }
 
@@ -1414,7 +1414,7 @@ layer {
   name: "res_scale3_16"
   type: "Eltwise"
   bottom: "res_scale3_15"
-  bottom: "res_scale3_16"
+  bottom: "res_scale3_16b"
   top: "res_scale3_16"
 }
 
@@ -1487,20 +1487,18 @@ layer {
 
 layer {
   name: "scale3_shuffle"
-  type: "Python"
+  type: "Reshape"
   bottom: "scale3_upsampler_conv"
   top: "scale3_upsampler"
-  python_param {
-    module: "PixelShuffleLayer"
-    layer: "PixelShuffleLayer"
-    param_str: "'scale_factor': 2"
+  reshape_param {
+    pixelshuffler: 2
   }
 }
 
 # --------- Scale2 head ----------
 
 layer {
-  bottom: "img-scale2"
+  bottom: "img-scale1"
   top: "head_scale2"
   name: "head_conv_scale2"
   type: "Convolution"
@@ -1550,7 +1548,7 @@ layer {
   name: "res_scale2_pa1"
   type: "Convolution"
   bottom: "head_concat_scale2"
-  top: "res_scale3_pa1"
+  top: "res_scale2_pa1"
   param {
     lr_mult: 10
     decay_mult: 1
@@ -2582,7 +2580,7 @@ layer {
   name: "res_scale2_12"
   type: "Eltwise"
   bottom: "res_scale2_11"
-  bottom: "res_scale2_12"
+  bottom: "res_scale2_12b"
   top: "res_scale2_12"
 }
 
@@ -2657,7 +2655,7 @@ layer {
   name: "res_scale2_13"
   type: "Eltwise"
   bottom: "res_scale2_12"
-  bottom: "res_scale2_13"
+  bottom: "res_scale2_13b"
   top: "res_scale2_13"
 }
 
@@ -2732,7 +2730,7 @@ layer {
   name: "res_scale2_14"
   type: "Eltwise"
   bottom: "res_scale2_13"
-  bottom: "res_scale2_14"
+  bottom: "res_scale2_14b"
   top: "res_scale2_14"
 }
 
@@ -2882,7 +2880,7 @@ layer {
   name: "res_scale2_16"
   type: "Eltwise"
   bottom: "res_scale2_15"
-  bottom: "res_scale2_16"
+  bottom: "res_scale2_16b"
   top: "res_scale2_16"
 }
 
@@ -2955,13 +2953,11 @@ layer {
 
 layer {
   name: "scale2_shuffle"
-  type: "Python"
+  type: "Reshape"
   bottom: "scale2_upsampler_conv"
   top: "scale2_upsampler"
-  python_param {
-    module: "PixelShuffleLayer"
-    layer: "PixelShuffleLayer"
-    param_str: "'scale_factor': 2"
+  reshape_param {
+    pixelshuffler: 2
   }
 }
 
@@ -2969,7 +2965,7 @@ layer {
 # --------- Scale1 head ----------
 
 layer {
-  bottom: "img-scale1"
+  bottom: "img"
   top: "head_scale1"
   name: "head_conv_scale1"
   type: "Convolution"
@@ -3303,7 +3299,7 @@ layer {
   type: "Eltwise"
   bottom: "res_scale1_1"
   bottom: "res_scale1_2b"
-  top: "res_scale3_2"
+  top: "res_scale1_2"
 }
 
 ################# 3 ##################
@@ -4052,7 +4048,7 @@ layer {
   name: "res_scale1_12"
   type: "Eltwise"
   bottom: "res_scale1_11"
-  bottom: "res_scale1_12"
+  bottom: "res_scale1_12b"
   top: "res_scale1_12"
 }
 
@@ -4127,7 +4123,7 @@ layer {
   name: "res_scale1_13"
   type: "Eltwise"
   bottom: "res_scale1_12"
-  bottom: "res_scale1_13"
+  bottom: "res_scale1_13b"
   top: "res_scale1_13"
 }
 
@@ -4202,7 +4198,7 @@ layer {
   name: "res_scale1_14"
   type: "Eltwise"
   bottom: "res_scale1_13"
-  bottom: "res_scale1_14"
+  bottom: "res_scale1_14b"
   top: "res_scale1_14"
 }
 
@@ -4352,7 +4348,7 @@ layer {
   name: "res_scale1_16"
   type: "Eltwise"
   bottom: "res_scale1_15"
-  bottom: "res_scale1_16"
+  bottom: "res_scale1_16b"
   top: "res_scale1_16"
 }
 
@@ -4395,7 +4391,89 @@ layer {
   top: "scale1_skip_connection_res_blocks"
 }
 
+# --------------------- Generate Prediction -----------------------
+layer {
+  name: "nonlinear_conv"
+  type: "Convolution"
+  bottom: "scale1_skip_connection_res_blocks"
+  top: "nonlinear_conv"
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 1
+  }
+  convolution_param {
+      weight_filler {
+        type: "xavier"
+      }
+      bias_filler {
+        type: "constant"
+        value: 0
+      }
+      num_output: 64
+      pad: 1
+      kernel_size: 3
+  }
+}
 
+layer {
+  name: "nonlinear_conv_relu"
+  type: "ReLU"
+  bottom: "nonlinear_conv"
+  top: "nonlinear_conv"
+}
 
+layer {
+  name: "output_conv"
+  type: "Convolution"
+  bottom: "nonlinear_conv"
+  top: "output_conv"
+  param {
+    lr_mult: 10
+    decay_mult: 1
+  }
+  param {
+    lr_mult: 20
+    decay_mult: 1
+  }
+  convolution_param {
+      weight_filler {
+        type: "xavier"
+      }
+      bias_filler {
+        type: "constant"
+        value: 0
+      }
+      num_output: 1
+      kernel_size: 5
+      pad: 2
+  }
+}
+layer {
+  name: "sigmoid_prediction_output"
+  type: "Sigmoid"
+  bottom: "output_conv"
+  top: "sigmoid_prediction_output"
+}
 
-
+# ------------------------- Loss --------------------------
+layer {
+  name: "loss"
+  type: "EuclideanLoss"
+  bottom: "sigmoid_prediction_output"
+  bottom: "gt"
+  top: "loss"
+}
+layer {
+  name: "accuracy"
+  type: "EuclideanLoss"
+  bottom: "sigmoid_prediction_output"
+  bottom: "gt"
+  top: "accuracy"
+  include {
+   phase: TEST
+  }
+}
