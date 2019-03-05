@@ -10,6 +10,7 @@ layer {
   top: "gt"
 #  top: "fg"
 #  top: "bg"
+  top: "tri-map-origin"
   hdf5_data_param {
     source: "/home/dl/harddisk/Datasets/adobe-test/train.txt"
     batch_size: 1
@@ -28,9 +29,10 @@ layer {
   top: "gt"
 #  top: "fg"
 #  top: "bg"
+  top: "tri-map-origin"
   hdf5_data_param {
     source: "/home/dl/harddisk/Datasets/adobe-test/val.txt"
-    batch_size: 1
+    batch_size: 4
   }
   include {
     phase: TEST
@@ -4458,21 +4460,42 @@ layer {
   bottom: "output_conv"
   top: "sigmoid_prediction_output"
 }
-
-# ------------------------- Loss --------------------------
+# -------------------------- Loss --------------------------
+layer {
+  name: "y_true"
+  type: "Concat"
+  bottom: "tri-map-origin"
+  bottom: "gt"
+  top: "y_true"
+  concat_param {
+    axis: 1
+  }
+}
 layer {
   name: "loss"
-  type: "EuclideanLoss"
+  type: "Python"
   bottom: "sigmoid_prediction_output"
-  bottom: "gt"
+  bottom: "y_true"
   top: "loss"
+  python_param {
+    module: "alphaPredictionLoss"
+    layer: "AlphaPredictionLossLayer"
+    param_str: '{"epsilon": 1e-6}'
+  }
+  loss_weight: 1
 }
 layer {
   name: "accuracy"
-  type: "EuclideanLoss"
+  type: "Python"
   bottom: "sigmoid_prediction_output"
-  bottom: "gt"
+  bottom: "y_true"
   top: "accuracy"
+  python_param {
+    module: "alphaPredictionLoss"
+    layer: "AlphaPredictionLossLayer"
+    param_str: '{"epsilon": 1e-6}'
+  }
+  loss_weight: 1
   include {
    phase: TEST
   }
